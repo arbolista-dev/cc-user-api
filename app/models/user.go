@@ -33,6 +33,17 @@ type UserLogin struct {
 	Password string `json:"password"`
 }
 
+type UserFacebook struct {
+	FacebookID		string `json:"facebookID"`
+	FacebookToken	string `json:"facebookToken"`
+	Answers         types.JSONText `json:"answers" db:"answers"`
+}
+type FacebookToken struct {
+	FacebookID		string `json:"id"`
+	FacebookName	string `json:"name"`
+	Error         types.JSONText `json:"error"`
+}
+
 type Answers struct {
 	Answers types.JSONText `json:"answers"`
 }

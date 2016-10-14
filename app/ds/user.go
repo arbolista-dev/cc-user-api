@@ -9,6 +9,9 @@ import (
 	"time"
 	"upper.io/db.v2"
 	"github.com/lib/pq"
+	"net/http"
+	"encoding/json"
+	"io/ioutil"
 )
 
 func GetSession(token string) (userID uint, jti string, err error) {
@@ -87,6 +90,75 @@ func Add(user models.User) (login map[string]interface{}, err error) {
 
 func Delete(userID uint) (err error) {
 	err = userSource.Find(db.Cond{"user_id": userID}).Delete()
+	return
+}
+
+func ValidateFacebookToken(logRequest models.UserFacebook) (valid bool,err error) {
+	valid = false
+	resp, err := http.Get("https://graph.facebook.com/v2.5/"+logRequest.FacebookID+"?access_token="+logRequest.FacebookToken);
+	if err != nil {
+        return 
+    }
+    body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 
+	}
+	var facebookResponse models.FacebookToken
+	err = json.Unmarshal(body, &facebookResponse)
+
+    if facebookResponse.Error !=nil {
+    	valid = false;
+    	return
+    }
+    valid = facebookResponse.FacebookID == logRequest.FacebookID
+    return 
+
+}
+
+func LoginFacebook(logRequest models.UserFacebook) (login map[string]interface{}, err error) {
+	var user models.User
+	var valid bool
+	valid, err =ValidateFacebookToken(logRequest)
+	if valid == false {
+		err = errors.New(`{"facebook":"token-invalid"}`);
+	}
+	if err!=nil {
+		return
+	}
+	err = userSource.Find("email", logRequest.FacebookID).One(&user)
+	if err != nil {
+		err = nil;
+		user.Email =  logRequest.FacebookID;
+		user.FirstName = "";
+		user.LastName = "";
+		user.Answers = logRequest.Answers;
+		login, err = Add(user);
+		return
+	}
+
+	token, err := newToken(user.UserID)
+	if err != nil {
+		return
+	}
+
+	sToken, err := token.SignedString([]byte(os.Getenv("CC_JWTSIGN")))
+	if err != nil {
+		return
+	}
+
+	user.AddJTI(token.Claims["jti"].(string))
+
+	user.MarshalDB()
+	err = userSource.Find("user_id", user.UserID).Update(user)
+	if err != nil {
+		return
+	}
+
+	login = map[string]interface{}{
+		"name":    user.FirstName,
+		"token":   sToken,
+		"answers": user.Answers.String(),
+	}
 	return
 }
 
