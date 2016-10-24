@@ -93,44 +93,44 @@ func Delete(userID uint) (err error) {
 	return
 }
 
-func ValidateFacebookToken(logRequest models.UserFacebook) (valid bool,err error) {
-	valid = false
-	resp, err := http.Get("https://graph.facebook.com/v2.5/"+logRequest.FacebookID+"?access_token="+logRequest.FacebookToken);
+func ValidateFacebookToken(logRequest models.UserFacebook) (facebookData models.FacebookToken,err error) {
+	
+	resp, err := http.Get("https://graph.facebook.com/v2.5/"+logRequest.FacebookID+"?fields=id,first_name,last_name,email&access_token="+logRequest.FacebookToken);
 	if err != nil {
         return 
     }
     body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+
 		return 
 	}
-	var facebookResponse models.FacebookToken
-	err = json.Unmarshal(body, &facebookResponse)
+	err = json.Unmarshal(body, &facebookData)
 
-    if facebookResponse.Error !=nil {
-    	valid = false;
+    if facebookData.Error !=nil || facebookData.FacebookID != logRequest.FacebookID {
+    	err =  errors.New("Token invalid");
     	return
     }
-    valid = facebookResponse.FacebookID == logRequest.FacebookID
     return 
 
 }
 
 func LoginFacebook(logRequest models.UserFacebook) (login map[string]interface{}, err error) {
 	var user models.User
-	var valid bool
-	valid, err =ValidateFacebookToken(logRequest)
-	if valid == false {
+	var facebookData models.FacebookToken
+	facebookData, err =ValidateFacebookToken(logRequest)
+	if err != nil {
 		err = errors.New(`{"facebook":"token-invalid"}`);
 	}
 	if err!=nil {
 		return
 	}
-	err = userSource.Find("email", logRequest.FacebookID).One(&user)
+	err = userSource.Find("facebook_id", logRequest.FacebookID).One(&user)
 	if err != nil {
 		err = nil;
-		user.Email =  logRequest.FacebookID;
-		user.FirstName = "";
-		user.LastName = "";
+		user.FacebookID =  facebookData.FacebookID;
+		user.Email =  facebookData.Email;
+		user.FirstName = facebookData.FirstName;
+		user.LastName = facebookData.LastName;
 		user.Answers = logRequest.Answers;
 		login, err = Add(user);
 		return
