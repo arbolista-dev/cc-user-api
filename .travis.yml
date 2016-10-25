@@ -1,0 +1,14 @@
+sudo: required
+
+language: go
+go:
+ - 1.6
+
+services:
+  - docker
+
+script:
+ - docker pull postgres:9.4.5
+ - docker build -f Dockerfile.test -t cc:user_api .
+ - make create-database
+ - docker run -p 0.0.0.0:8082:8082 --name user_api --link postgres -e CC_DBNAME=$CC_DBNAME -e CC_DBUSER=$CC_DBUSER -e CC_DBPASS=$CC_DBPASS -e RUN_TEST=$RUN_TEST cc:user_api

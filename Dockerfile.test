@@ -26,6 +26,4 @@ COPY . /go/src/github.com/arbolista-dev/cc-user-api
 
 ARG USER_API_PORT=8080
 
-CMD ["revel", "run", "github.com/arbolista-dev/cc-user-api"]
-
-EXPOSE $USER_API_PORT
+CMD ["revel", "test", "github.com/arbolista-dev/cc-user-api"]

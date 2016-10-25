@@ -1,4 +1,3 @@
-.PHONY:migrate-database
 #--------- RUN ON HOST -----------------
 ## Initial setup commands
 # Create images for containers
