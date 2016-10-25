@@ -12,6 +12,7 @@ type User struct {
 	UserID          uint           `json:"user_id" db:"user_id,omitempty"`
 	FirstName       string         `json:"first_name" db:"first_name"`
 	LastName        string         `json:"last_name" db:"last_name"`
+	FacebookID      string         `json:"facebook_id" db:"facebook_id"`
 	Password        string         `json:"password" db:"-"`
 	Hash            []byte         `json:"-" db:"hash"`
 	Salt            []byte         `json:"-" db:"salt"`
@@ -31,6 +32,19 @@ type User struct {
 type UserLogin struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type UserFacebook struct {
+	FacebookID		string `json:"facebookID"`
+	FacebookToken	string `json:"facebookToken"`
+	Answers         types.JSONText `json:"answers" db:"answers"`
+}
+type FacebookToken struct {
+	FacebookID		string `json:"id"`
+	FirstName       string `json:"first_name"`
+	LastName        string `json:"last_name"`
+	Email   		string `json:"email"`
+	Error         types.JSONText `json:"error"`
 }
 
 type Answers struct {

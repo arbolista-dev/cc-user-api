@@ -9,6 +9,9 @@ import (
 	"time"
 	"upper.io/db.v2"
 	"github.com/lib/pq"
+	"net/http"
+	"encoding/json"
+	"io/ioutil"
 )
 
 func GetSession(token string) (userID uint, jti string, err error) {
@@ -87,6 +90,75 @@ func Add(user models.User) (login map[string]interface{}, err error) {
 
 func Delete(userID uint) (err error) {
 	err = userSource.Find(db.Cond{"user_id": userID}).Delete()
+	return
+}
+
+func ValidateFacebookToken(logRequest models.UserFacebook) (facebookData models.FacebookToken,err error) {
+	
+	resp, err := http.Get("https://graph.facebook.com/v2.5/"+logRequest.FacebookID+"?fields=id,first_name,last_name,email&access_token="+logRequest.FacebookToken);
+	if err != nil {
+        return 
+    }
+    body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+
+		return 
+	}
+	err = json.Unmarshal(body, &facebookData)
+
+    if facebookData.Error !=nil || facebookData.FacebookID != logRequest.FacebookID {
+    	err =  errors.New("Token invalid");
+    	return
+    }
+    return 
+
+}
+
+func LoginFacebook(logRequest models.UserFacebook) (login map[string]interface{}, err error) {
+	var user models.User
+	var facebookData models.FacebookToken
+	facebookData, err =ValidateFacebookToken(logRequest)
+	if err != nil {
+		err = errors.New(`{"facebook":"token-invalid"}`);
+	}
+	if err!=nil {
+		return
+	}
+	err = userSource.Find("facebook_id", logRequest.FacebookID).One(&user)
+	if err != nil {
+		err = nil;
+		user.FacebookID =  facebookData.FacebookID;
+		user.Email =  facebookData.Email;
+		user.FirstName = facebookData.FirstName;
+		user.LastName = facebookData.LastName;
+		user.Answers = logRequest.Answers;
+		login, err = Add(user);
+		return
+	}
+
+	token, err := newToken(user.UserID)
+	if err != nil {
+		return
+	}
+
+	sToken, err := token.SignedString([]byte(os.Getenv("CC_JWTSIGN")))
+	if err != nil {
+		return
+	}
+
+	user.AddJTI(token.Claims["jti"].(string))
+
+	user.MarshalDB()
+	err = userSource.Find("user_id", user.UserID).Update(user)
+	if err != nil {
+		return
+	}
+
+	login = map[string]interface{}{
+		"name":    user.FirstName,
+		"token":   sToken,
+		"answers": user.Answers.String(),
+	}
 	return
 }
 

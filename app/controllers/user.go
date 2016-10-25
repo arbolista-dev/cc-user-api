@@ -16,6 +16,24 @@ type Users struct {
 	App
 }
 
+func (c Users) LoginFacebook() revel.Result {
+	body, err := ioutil.ReadAll(c.Request.Body)
+	if err != nil {
+		return c.Error(err)
+	}
+	var logRequest models.UserFacebook
+	err = json.Unmarshal(body, &logRequest)
+	if err != nil {
+		return c.Error(err)
+	}
+	login, err := ds.LoginFacebook(logRequest)
+	if err != nil {
+		return c.Error(err)
+	}
+	return c.Data(login)
+
+} 
+
 func (c Users) Login() revel.Result {
 	body, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
