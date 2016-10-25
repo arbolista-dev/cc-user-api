@@ -8,6 +8,7 @@ services:
   - docker
 
 script:
+ - go get -u github.com/pressly/goose/cmd/goose
  - docker pull postgres:9.4.5
  - docker build -f Dockerfile.test -t cc:user_api .
  - make create-database

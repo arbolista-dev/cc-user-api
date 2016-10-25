@@ -16,7 +16,7 @@ create-database:
 	sleep 15 && \
 	docker exec postgres psql -h127.0.0.1 -p5432 -Upostgres -c "CREATE ROLE $(CC_DBUSER) PASSWORD '$(CC_DBPASS)' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN" &&\
 	docker exec postgres psql -h127.0.0.1 -p5432 -Upostgres -c "CREATE DATABASE $(CC_DBNAME)" &&\
-	cat sql/0001-init.sql sql/0002-leadersMigration.sql sql/0003-addCountryMigration.sql sql/0004-facebookMigration.sql | PGPASSWORD=$(CC_DBPASS) psql -h127.0.0.1 -p15432 -U$(CC_DBUSER) $(CC_DBNAME)
+	cd sql && goose postgres "user=$(CC_DBUSER) password=$(CC_DBPASS) dbname=$(CC_DBNAME) port=15432 sslmode=disable" up
 
 # Create API container
 create-api:
@@ -41,7 +41,7 @@ reset-database:
 
 # Run DB migrations
 migrate-database:
-	cat sql/0001-init.sql sql/0002-leadersMigration.sql sql/0003-addCountryMigration.sql sql/0004-facebookMigration.sql | PGPASSWORD=$(CC_DBPASS) psql -h127.0.0.1 -p15432 -U$(CC_DBUSER) $(CC_DBNAME)
+	cd sql && goose postgres "user=$(CC_DBUSER) password=$(CC_DBPASS) dbname=$(CC_DBNAME) port=15432 sslmode=disable" up
 
 # Update API with latest changes
 update-api:
