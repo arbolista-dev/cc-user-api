@@ -25,51 +25,52 @@ type User struct {
 	State						string 				 `json:"state" db:"state"`
 	County					string 				 `json:"county" db:"county"`
 	Country					string 				 `json:"country" db:"country"`
+	HouseholdSize		int 				 	 `json:"household_size" db:"household_size"`
 	TotalFootprint	types.JSONText `json:"total_footprint" db:"total_footprint"`
 	ResetHash       []byte         `json:"-" db:"reset_hash"`
 	ResetExpiration time.Time      `json:"-" db:"reset_expiration"`
 }
 
 type UserLogin struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    		string	`json:"email"`
+	Password		string	`json:"password"`
 }
 
 type UserFacebook struct {
-	FacebookID		string `json:"facebookID"`
-	FacebookToken	string `json:"facebookToken"`
-	Answers         types.JSONText `json:"answers" db:"answers"`
+	FacebookID			string	`json:"facebookID"`
+	FacebookToken		string	`json:"facebookToken"`
+	Answers       	types.JSONText `json:"answers" db:"answers"`
 }
 type FacebookToken struct {
-	FacebookID		string `json:"id"`
-	FirstName       string `json:"first_name"`
-	LastName        string `json:"last_name"`
-	Email   		string `json:"email"`
-	Error         types.JSONText `json:"error"`
+	FacebookID		string	`json:"id"`
+	FirstName   	string	`json:"first_name"`
+	LastName   		string	`json:"last_name"`
+	Email   			string	`json:"email"`
+	Error       	types.JSONText	`json:"error"`
 }
 
 type Answers struct {
-	Answers types.JSONText `json:"answers"`
+	Answers		types.JSONText	`json:"answers"`
 }
 
 type Location struct {
-	City						string 				 `json:"city" db:"city"`
-	State						string 				 `json:"state" db:"state"`
-	County					string 				 `json:"county" db:"county"`
-	Country					string 				 `json:"country" db:"country"`
+	City			string	`json:"city" db:"city"`
+	State			string 	`json:"state" db:"state"`
+	County		string  `json:"county" db:"county"`
+	Country		string 	`json:"country" db:"country"`
 }
 
 type TotalFootprint struct {
-	TotalFootprint types.JSONText `json:"total_footprint"`
+	TotalFootprint		types.JSONText	`json:"total_footprint"`
 }
 
 type Email struct {
-	Email string `json:"email"`
+	Email		string	`json:"email"`
 }
 
 type PaginatedLeaders struct {
-	TotalCount 	uint64  	`json:"total_count"`
-	List				[]Leader 	`json:"list"`
+	TotalCount		uint64	`json:"total_count"`
+	List					[]Leader	`json:"list"`
 }
 
 type Leader struct {
@@ -78,6 +79,7 @@ type Leader struct {
 	City							string 				 `json:"city" db:"city"`
 	State							string 				 `json:"state" db:"state"`
 	County						string 				 `json:"county" db:"county"`
+	HouseholdSize			int 				 	 `json:"household_size" db:"household_size"`
 	CategoryFootprint	types.JSONText `json:"footprint" db:"footprint"`
 }
 

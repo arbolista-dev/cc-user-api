@@ -94,24 +94,22 @@ func Delete(userID uint) (err error) {
 }
 
 func ValidateFacebookToken(logRequest models.UserFacebook) (facebookData models.FacebookToken,err error) {
-	
 	resp, err := http.Get("https://graph.facebook.com/v2.5/"+logRequest.FacebookID+"?fields=id,first_name,last_name,email&access_token="+logRequest.FacebookToken);
 	if err != nil {
-        return 
-    }
-    body, err := ioutil.ReadAll(resp.Body)
+  	return
+  }
+
+  body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-
-		return 
+		return
 	}
+
 	err = json.Unmarshal(body, &facebookData)
-
-    if facebookData.Error !=nil || facebookData.FacebookID != logRequest.FacebookID {
-    	err =  errors.New("Token invalid");
-    	return
-    }
-    return 
-
+  if facebookData.Error !=nil || facebookData.FacebookID != logRequest.FacebookID {
+  	err =  errors.New("Token invalid");
+  	return
+  }
+  return
 }
 
 func LoginFacebook(logRequest models.UserFacebook) (login map[string]interface{}, err error) {
@@ -227,31 +225,6 @@ func LogoutAll(userID uint) (err error) {
 	user.ClearAllJTI()
 
 	user.MarshalDB()
-	err = userSource.Find(db.Cond{"user_id": userID}).Update(user)
-	return
-}
-
-func UpdateAnswers(userID uint, answers models.Answers) (err error) {
-	var user models.User
-	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
-	if err != nil {
-		return
-	}
-	// user.UnmarshalDB()
-	user.Answers = answers.Answers
-	// user.MarshalDB()
-	err = userSource.Find(db.Cond{"user_id": userID}).Update(user)
-	return
-}
-
-
-func UpdateTotalFootprint(userID uint, footprint models.TotalFootprint) (err error) {
-	var user models.User
-	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
-	if err != nil {
-		return
-	}
-	user.TotalFootprint = footprint.TotalFootprint
 	err = userSource.Find(db.Cond{"user_id": userID}).Update(user)
 	return
 }
