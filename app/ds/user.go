@@ -253,6 +253,19 @@ func Update(userID uint, userNew models.User) (err error) {
 	return
 }
 
+func UpdateAnswers(userID uint, userAnswers models.AnswersUpdate) (err error) {
+	var user models.User
+	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
+	if err != nil {
+		return
+	}
+	user.Answers = userAnswers.Answers
+	user.HouseholdSize = userAnswers.HouseholdSize
+	user.TotalFootprint = userAnswers.TotalFootprint
+	err = userSource.Find(db.Cond{"user_id": userID}).Update(user)
+	return
+}
+
 func PassResetRequest(email string) (userID uint, token string, err error) {
 	var user models.User
 	err = userSource.Find(db.Cond{"email": email}).One(&user)

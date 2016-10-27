@@ -53,6 +53,12 @@ type Answers struct {
 	Answers		types.JSONText	`json:"answers"`
 }
 
+type AnswersUpdate struct {
+	Answers		types.JSONText	`json:"answers"`
+	HouseholdSize		int 				 	 `json:"household_size" db:"household_size"`
+	TotalFootprint	types.JSONText `json:"total_footprint" db:"total_footprint"`
+}
+
 type Location struct {
 	City			string	`json:"city" db:"city"`
 	State			string 	`json:"state" db:"state"`

@@ -214,21 +214,21 @@ func (c Users) UpdateAnswers() revel.Result {
 		return c.Error(err)
 	}
 
-	var updatedUser models.User
+	var userAnswers models.AnswersUpdate
 
-	updatedUser.TotalFootprint = footprint.TotalFootprint
-	updatedUser.Answers = bodyAnswers.Answers
+	userAnswers.Answers = bodyAnswers.Answers
+	userAnswers.TotalFootprint = footprint.TotalFootprint
 
 	input_size, ok := answersMap["answers"].(map[string]interface{})["input_size"].(string)
-	if ok {
+	if ok == true {
 		householdSize, err := strconv.Atoi(input_size)
 		if err != nil {
 			return c.Error(err)
 		}
-		updatedUser.HouseholdSize = householdSize
+		userAnswers.HouseholdSize = householdSize
 	}
 
-	err = ds.Update(userID, updatedUser)
+	err = ds.UpdateAnswers(userID, userAnswers)
 	if err != nil {
 		return c.Error(err)
 	}
