@@ -80,7 +80,7 @@ func (c Users) LogoutAll() revel.Result {
 
 func (c Users) ListLeaders() revel.Result {
 
-	limit, offset, category, city, state := 10, 0, "", "", ""
+	limit, offset, state, household_size := 10, 0, "", 0
 
 	if len(c.Params.Values) != 0 {
 		if value, ok := c.Params.Values["limit"]; ok {
@@ -97,18 +97,19 @@ func (c Users) ListLeaders() revel.Result {
 			}
 			offset = int(v)
 		}
-		if value, ok := c.Params.Values["category"]; ok {
-			category = value[0]
-		}
-		if value, ok := c.Params.Values["city"]; ok {
-			city = value[0]
-		}
 		if value, ok := c.Params.Values["state"]; ok {
 			state = value[0]
 		}
+		if value, ok := c.Params.Values["household_size"]; ok {
+			v, err := strconv.ParseInt(value[0], 10, 32)
+			if err != nil {
+				return c.Error(err)
+			}
+			household_size = int(v)
+		}
 	}
 
-	leaders, err := ds.ListLeaders(limit, offset, category, city, state)
+	leaders, err := ds.ListLeaders(limit, offset, state, household_size)
 	if err != nil {
 		return c.Error(err)
 	}

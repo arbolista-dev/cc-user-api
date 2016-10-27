@@ -3,7 +3,8 @@
 # Create images for containers
 images:
 	docker pull postgres:9.4.5 && \
-	docker build -t cc:user_api .
+	docker build -t cc:user_api . && \
+	go get -u bitbucket.org/liamstask/goose/cmd/goose
 
 # Create DB container
 create-database:
@@ -16,7 +17,7 @@ create-database:
 	sleep 15 && \
 	docker exec postgres psql -h127.0.0.1 -p5432 -Upostgres -c "CREATE ROLE $(CC_DBUSER) PASSWORD '$(CC_DBPASS)' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN" &&\
 	docker exec postgres psql -h127.0.0.1 -p5432 -Upostgres -c "CREATE DATABASE $(CC_DBNAME)" &&\
-	cd sql && goose postgres "user=$(CC_DBUSER) password=$(CC_DBPASS) dbname=$(CC_DBNAME) port=15432 sslmode=disable" up
+	goose up
 
 # Create API container
 create-api:
@@ -35,13 +36,9 @@ create-api:
 database-shell:
 	docker exec -it postgres psql -Ucc cc_users
 
-# Clear database and run migrations
-reset-database:
-	cat sql/0000-reset.sql sql/0001-init.sql sql/0002-leadersMigration.sql sql/0003-addCountryMigration.sql sql/0004-facebookMigration.sql | PGPASSWORD=$(CC_DBPASS) psql -h127.0.0.1 -p15432 -U$(CC_DBUSER) $(CC_DBNAME)
-
 # Run DB migrations
 migrate-database:
-	cd sql && goose postgres "user=$(CC_DBUSER) password=$(CC_DBPASS) dbname=$(CC_DBNAME) port=15432 sslmode=disable" up
+	goose up
 
 # Update API with latest changes
 update-api:
