@@ -14,8 +14,6 @@ export $(cat .env | xargs)
 
 Run in this order:
 ```
-go get -u github.com/pressly/goose/cmd/goose
-
 make images
 
 make create-database
