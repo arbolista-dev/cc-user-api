@@ -7,9 +7,10 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"strconv"
 )
 
-var token string
+var token, userID string
 
 type AppTest struct {
 	testing.TestSuite
@@ -139,7 +140,35 @@ func (t *AppTest) TestE_UserLogout_SUCCESS() {
 	testSuccess(t, true, "")
 }
 
-func (t *AppTest) TestF_UserLogout_ERROR_NoSession() {
+func (t *AppTest) TestF1_ListLeaders_SUCCESS() {
+	req := myVERB("GET", "/user/leaders", "", nil, "", t)
+	t.NewTestRequest(req).Send()
+	buf := t.ResponseBody
+	var listRes apiResult
+	err := json.Unmarshal(buf, &listRes)
+	t.AssertEqual(err, nil)
+	t.AssertOk()
+	t.AssertContentType("application/json; charset=utf-8")
+	if listRes.Data != nil {
+		_userID := int(listRes.Data.(map[string]interface{})["list"].([]interface{})[0].(map[string]interface{})["user_id"].(float64))
+		userID = strconv.Itoa(_userID)
+		log.Println(string(t.ResponseBody))
+		log.Printf("Setting userID to: ", userID)
+	}
+	testSuccess(t, true, "")
+}
+
+func (t *AppTest) TestF1_ShowUser_SUCCESS() {
+	userPath := "/user/" + userID
+	req := myVERB("GET", userPath, "", nil, "", t)
+	t.NewTestRequest(req).Send()
+	log.Println(string(t.ResponseBody))
+	t.AssertOk()
+	t.AssertContentType("application/json; charset=utf-8")
+	testSuccess(t, true, "")
+}
+
+func (t *AppTest) TestG_UserLogout_ERROR_NoSession() {
 	req := myVERB("GET", "/user/logout", "", nil, token, t)
 	t.NewTestRequest(req).Send()
 	t.AssertOk()
@@ -148,11 +177,11 @@ func (t *AppTest) TestF_UserLogout_ERROR_NoSession() {
 	testSuccess(t, false, `{"session": "non-existent"}`)
 }
 
-func (t *AppTest) TestG_UserLogin_SUCCESS() {
+func (t *AppTest) TestH_UserLogin_SUCCESS() {
 	t.TestC_Login_SUCCESS()
 }
 
-func (t *AppTest) TestH_Delete_SUCCESS() {
+func (t *AppTest) TestI_Delete_SUCCESS() {
 	req := myVERB("DELETE", "/user", "", nil, token, t)
 	t.NewTestRequest(req).Send()
 	t.AssertOk()

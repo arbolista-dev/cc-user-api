@@ -229,6 +229,14 @@ func LogoutAll(userID uint) (err error) {
 	return
 }
 
+func Show(userID uint) (user models.Leader, err error) {
+	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
+	if err != nil {
+		return
+	}
+	return
+}
+
 func SetLocation(userID uint, location models.Location) (err error) {
 	var user models.User
 	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)

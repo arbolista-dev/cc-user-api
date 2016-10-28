@@ -80,6 +80,7 @@ type PaginatedLeaders struct {
 }
 
 type Leader struct {
+	UserID          	uint           `json:"user_id" db:"user_id"`
 	FirstName       	string         `json:"first_name" db:"first_name"`
 	LastName        	string         `json:"last_name" db:"last_name"`
 	City							string 				 `json:"city" db:"city"`

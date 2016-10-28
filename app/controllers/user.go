@@ -171,6 +171,15 @@ func (c Users) Delete() revel.Result {
 	return c.OK()
 }
 
+func (c Users) Show(userID uint) revel.Result {
+	user, err := ds.Show(userID)
+	if err != nil {
+		return c.Error(err)
+	}
+
+	return c.Data(user)
+}
+
 func (c Users) UpdateAnswers() revel.Result {
 	userID, _, err := c.GetSession()
 	if err != nil {
