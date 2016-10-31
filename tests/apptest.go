@@ -158,14 +158,24 @@ func (t *AppTest) TestF1_ListLeaders_SUCCESS() {
 	testSuccess(t, true, "")
 }
 
-func (t *AppTest) TestF1_ShowUser_SUCCESS() {
-	userPath := "/user/" + userID
+func (t *AppTest) TestF2_ShowUser_SUCCESS() {
+	userPath := "/profile/" + userID
 	req := myVERB("GET", userPath, "", nil, "", t)
 	t.NewTestRequest(req).Send()
 	log.Println(string(t.ResponseBody))
 	t.AssertOk()
 	t.AssertContentType("application/json; charset=utf-8")
-	testSuccess(t, true, "")
+	testSuccess(t, true, profile)
+}
+
+func (t *AppTest) TestF3_ShowUser_ERROR_NonExistent() {
+	userPath := "/profile/999999999"
+	req := myVERB("GET", userPath, "", nil, "", t)
+	t.NewTestRequest(req).Send()
+	t.AssertOk()
+	t.AssertContentType("application/json; charset=utf-8")
+	log.Println(string(t.ResponseBody))
+	testSuccess(t, false, `{"profile": "non-existent"}`)
 }
 
 func (t *AppTest) TestG_UserLogout_ERROR_NoSession() {

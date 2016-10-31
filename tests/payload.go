@@ -35,3 +35,13 @@ var loginBody_badPassword = `{
 var answers_update = `{"answers":{"result_food_total": "5", "result_housing_total": "6", "result_services_total": "3", "result_goods_total": "4", "result_transport_total": "8", "result_grand_total": "26", "input_size": "3"}}`
 
 var location_set = `{"city":"Brooklyn","county":"Kings","state":"New York","country":"us"}`
+
+var profile = `{
+  "first_name": "Juanito",
+  "last_name" : "Perezin",
+  "city": "Brooklyn",
+  "county": "Kings",
+  "state": "New York",
+  "household_size": "3",
+  "total_footprint":{"result_food_total": "5", "result_housing_total": "6", "result_services_total": "3", "result_goods_total": "4", "result_transport_total": "8", "result_grand_total": "26"}
+}`
