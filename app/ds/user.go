@@ -229,10 +229,23 @@ func LogoutAll(userID uint) (err error) {
 	return
 }
 
-func Show(userID uint) (user models.Leader, err error) {
+func Show(userID uint) (profile map[string]interface{}, err error) {
+	var user models.Leader
 	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
 	if err != nil {
+		err = errors.New(`{"profile": "non-existent"}`)
 		return
+	}
+
+	profile = map[string]interface{}{
+		"user_id":    			user.UserID,
+		"first_name": 			user.FirstName,
+		"last_name":  			user.LastName,
+		"city":  						user.City,
+		"state":  					user.State,
+		"county":  					user.County,
+		"household_size": 	user.HouseholdSize,
+		"total_footprint": 	user.TotalFootprint.String(),
 	}
 	return
 }
