@@ -43,5 +43,5 @@ var profile = `{
   "county": "Kings",
   "state": "New York",
   "household_size": "3",
-  "total_footprint":{"result_food_total": "5", "result_housing_total": "6", "result_services_total": "3", "result_goods_total": "4", "result_transport_total": "8", "result_grand_total": "26"}
+  "total_footprint":{"result_food_total": "5", "result_housing_total": "6", "result_services_total": "3", "result_goods_total": "4", "result_shopping_total": "7", "result_transport_total": "8", "result_grand_total": "26"}
 }`

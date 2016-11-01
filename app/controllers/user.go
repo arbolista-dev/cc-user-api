@@ -205,6 +205,8 @@ func (c Users) UpdateAnswers() revel.Result {
 	footprintsMap := map[string]interface{}{
 		"result_food_total": 0,
 		"result_housing_total": 0,
+		"result_services_total": 0,
+		"result_goods_total": 0,
 		"result_shopping_total": 0,
 		"result_transport_total": 0,
 		"result_grand_total": 0,
