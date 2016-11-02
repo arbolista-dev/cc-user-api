@@ -81,6 +81,7 @@ func Add(user models.User) (login map[string]interface{}, err error) {
 	}
 
 	login = map[string]interface{}{
+		"user_id": userID,
 		"name":    user.FirstName,
 		"token":   sToken,
 		"answers": user.Answers.String(),
@@ -153,6 +154,7 @@ func LoginFacebook(logRequest models.UserFacebook) (login map[string]interface{}
 	}
 
 	login = map[string]interface{}{
+		"user_id": user.UserID,
 		"name":    user.FirstName,
 		"token":   sToken,
 		"answers": user.Answers.String(),
@@ -192,6 +194,7 @@ func Login(logRequest models.UserLogin) (login map[string]interface{}, err error
 	}
 
 	login = map[string]interface{}{
+		"user_id": user.UserID,
 		"name":    user.FirstName,
 		"token":   sToken,
 		"answers": user.Answers.String(),
