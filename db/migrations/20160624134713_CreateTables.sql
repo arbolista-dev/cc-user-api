@@ -1,7 +1,7 @@
 
 -- +goose Up
 -- SQL in section 'Up' is executed when this migration is applied
-CREATE TABLE "users" (
+CREATE TABLE IF NOT EXISTS "users" (
     "user_id"          SERIAL PRIMARY KEY,
     "email"            VARCHAR(80) UNIQUE,
     "first_name"       VARCHAR(80),
