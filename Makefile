@@ -3,7 +3,7 @@
 # Create images for containers
 images:
 	docker pull postgres:9.4.5 && \
-	docker build -t cc:user_api .
+	docker build -t cc:user_api . && \
 	go get -u bitbucket.org/liamstask/goose/cmd/goose
 
 # Create DB container

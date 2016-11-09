@@ -30,7 +30,7 @@ CC_DBUSER - Name of the postgres user
 CC_DBPASS - Password of the user
 CC_DBADDRESS - Address of the postgres service
 
-CC_JWTSIGN - A secret string to sing JWT
+CC_JWTSIGN - A secret string to sign JWT
 
 CC_SPARKPOSTKEY - The key of the sparkpost app
 ```

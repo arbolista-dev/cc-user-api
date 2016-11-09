@@ -17,7 +17,6 @@ ENV GOPATH /go
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 
 RUN go get github.com/revel/cmd/revel
-#RUN go get bitbucket.org/liamstask/goose/cmd/goose
 
 RUN mkdir /go/src/github.com/arbolista-dev &&\
     mkdir /go/src/github.com/arbolista-dev/cc-user-api

@@ -32,7 +32,7 @@ func (c Users) LoginFacebook() revel.Result {
 	}
 	return c.Data(login)
 
-} 
+}
 
 func (c Users) Login() revel.Result {
 	body, err := ioutil.ReadAll(c.Request.Body)
@@ -80,7 +80,7 @@ func (c Users) LogoutAll() revel.Result {
 
 func (c Users) ListLeaders() revel.Result {
 
-	limit, offset, category, city, state := 10, 0, "", "", ""
+	limit, offset, state, household_size := 10, 0, "", 0
 
 	if len(c.Params.Values) != 0 {
 		if value, ok := c.Params.Values["limit"]; ok {
@@ -97,18 +97,19 @@ func (c Users) ListLeaders() revel.Result {
 			}
 			offset = int(v)
 		}
-		if value, ok := c.Params.Values["category"]; ok {
-			category = value[0]
-		}
-		if value, ok := c.Params.Values["city"]; ok {
-			city = value[0]
-		}
 		if value, ok := c.Params.Values["state"]; ok {
 			state = value[0]
 		}
+		if value, ok := c.Params.Values["household_size"]; ok {
+			v, err := strconv.ParseInt(value[0], 10, 32)
+			if err != nil {
+				return c.Error(err)
+			}
+			household_size = int(v)
+		}
 	}
 
-	leaders, err := ds.ListLeaders(limit, offset, category, city, state)
+	leaders, err := ds.ListLeaders(limit, offset, state, household_size)
 	if err != nil {
 		return c.Error(err)
 	}
@@ -210,13 +211,25 @@ func (c Users) UpdateAnswers() revel.Result {
 
 	var footprint models.TotalFootprint
 	footprint.TotalFootprint, err = json.Marshal(footprintsMap)
-
-	err = ds.UpdateTotalFootprint(userID, footprint)
 	if err != nil {
 		return c.Error(err)
 	}
 
-	err = ds.UpdateAnswers(userID, bodyAnswers)
+	var userAnswers models.AnswersUpdate
+
+	userAnswers.Answers = bodyAnswers.Answers
+	userAnswers.TotalFootprint = footprint.TotalFootprint
+
+	input_size, ok := answersMap["answers"].(map[string]interface{})["input_size"].(string)
+	if ok == true {
+		householdSize, err := strconv.Atoi(input_size)
+		if err != nil {
+			return c.Error(err)
+		}
+		userAnswers.HouseholdSize = householdSize
+	}
+
+	err = ds.UpdateAnswers(userID, userAnswers)
 	if err != nil {
 		return c.Error(err)
 	}
@@ -224,12 +237,17 @@ func (c Users) UpdateAnswers() revel.Result {
 }
 
 func FootprintAnswerToUint(name string, answersMap map[string]interface{}) (footprintAmount uint) {
-	amount := answersMap["answers"].(map[string]interface{})[name].(string)
-	amountFloat, err := strconv.ParseFloat(amount, 64)
-	if err != nil {
+	amount, ok := answersMap["answers"].(map[string]interface{})[name].(string)
+	if ok == true {
+		amountFloat, err := strconv.ParseFloat(amount, 64)
+		if err != nil {
+			return
+		}
+		return uint(math.Floor(amountFloat + .5))
+	} else {
 		return
 	}
-	return uint(math.Floor(amountFloat + .5))
+
 }
 
 

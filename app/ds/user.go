@@ -94,24 +94,22 @@ func Delete(userID uint) (err error) {
 }
 
 func ValidateFacebookToken(logRequest models.UserFacebook) (facebookData models.FacebookToken,err error) {
-	
 	resp, err := http.Get("https://graph.facebook.com/v2.5/"+logRequest.FacebookID+"?fields=id,first_name,last_name,email&access_token="+logRequest.FacebookToken);
 	if err != nil {
-        return 
-    }
-    body, err := ioutil.ReadAll(resp.Body)
+  	return
+  }
+
+  body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-
-		return 
+		return
 	}
+
 	err = json.Unmarshal(body, &facebookData)
-
-    if facebookData.Error !=nil || facebookData.FacebookID != logRequest.FacebookID {
-    	err =  errors.New("Token invalid");
-    	return
-    }
-    return 
-
+  if facebookData.Error !=nil || facebookData.FacebookID != logRequest.FacebookID {
+  	err =  errors.New("Token invalid");
+  	return
+  }
+  return
 }
 
 func LoginFacebook(logRequest models.UserFacebook) (login map[string]interface{}, err error) {
@@ -231,31 +229,6 @@ func LogoutAll(userID uint) (err error) {
 	return
 }
 
-func UpdateAnswers(userID uint, answers models.Answers) (err error) {
-	var user models.User
-	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
-	if err != nil {
-		return
-	}
-	// user.UnmarshalDB()
-	user.Answers = answers.Answers
-	// user.MarshalDB()
-	err = userSource.Find(db.Cond{"user_id": userID}).Update(user)
-	return
-}
-
-
-func UpdateTotalFootprint(userID uint, footprint models.TotalFootprint) (err error) {
-	var user models.User
-	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
-	if err != nil {
-		return
-	}
-	user.TotalFootprint = footprint.TotalFootprint
-	err = userSource.Find(db.Cond{"user_id": userID}).Update(user)
-	return
-}
-
 func SetLocation(userID uint, location models.Location) (err error) {
 	var user models.User
 	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
@@ -276,6 +249,19 @@ func Update(userID uint, userNew models.User) (err error) {
 		return
 	}
 	user.Update(userNew)
+	err = userSource.Find(db.Cond{"user_id": userID}).Update(user)
+	return
+}
+
+func UpdateAnswers(userID uint, userAnswers models.AnswersUpdate) (err error) {
+	var user models.User
+	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
+	if err != nil {
+		return
+	}
+	user.Answers = userAnswers.Answers
+	user.HouseholdSize = userAnswers.HouseholdSize
+	user.TotalFootprint = userAnswers.TotalFootprint
 	err = userSource.Find(db.Cond{"user_id": userID}).Update(user)
 	return
 }
@@ -327,64 +313,20 @@ func PassResetConfirm(userID uint, token, password string) (err error) {
 	return
 }
 
-func ListLeaders(limit int, offset int, category string, city string, state string) (leaders models.PaginatedLeaders, err error) {
+func ListLeaders(limit int, offset int, state string, household_size int) (leaders models.PaginatedLeaders, err error) {
 
-	switch {
-	case category=="food":
-		if len(city) == 0 && len(state) == 0 {
-			query = leadersFoodSource.Find().OrderBy("footprint")
-		} else if len(city) > 0 && len(state) > 0 {
-			query = leadersFoodSource.Find(db.Cond{"city": city},db.Cond{"state": state}).OrderBy("footprint")
-		} else if len(city) > 0  && len(state) == 0 {
-			query = leadersFoodSource.Find(db.Cond{"city": city}).OrderBy("footprint")
-		} else if len(city) == 0 && len(state) > 0{
-			query = leadersFoodSource.Find(db.Cond{"state": state}).OrderBy("footprint")
+	if household_size != 0 {
+		if len(state) == 0 {
+			query = leadersSource.Find(db.Cond{"household_size": household_size})
+		} else if len(state) > 0 {
+			query = leadersSource.Find(db.Cond{"household_size": household_size}, db.Cond{"state": state})
 		}
-		break
-	case category=="housing":
-		if len(city) == 0 && len(state) == 0 {
-		  query = leadersHousingSource.Find().OrderBy("footprint")
-		} else if len(city) > 0 && len(state) > 0 {
-		  query = leadersHousingSource.Find(db.Cond{"city": city},db.Cond{"state": state}).OrderBy("footprint")
-		} else if len(city) > 0  && len(state) == 0 {
-		  query = leadersHousingSource.Find(db.Cond{"city": city}).OrderBy("footprint")
-		} else if len(city) == 0 && len(state) > 0{
-		  query = leadersHousingSource.Find(db.Cond{"state": state}).OrderBy("footprint")
+	} else {
+		if len(state) == 0 {
+			query = leadersSource.Find()
+		} else if len(state) > 0 {
+			query = leadersSource.Find(db.Cond{"state": state})
 		}
-		break
-	case category=="shopping":
-		if len(city) == 0 && len(state) == 0 {
-		  query = leadersShoppingSource.Find().OrderBy("footprint")
-		} else if len(city) > 0 && len(state) > 0 {
-		  query = leadersShoppingSource.Find(db.Cond{"city": city},db.Cond{"state": state}).OrderBy("footprint")
-		} else if len(city) > 0  && len(state) == 0 {
-		  query = leadersShoppingSource.Find(db.Cond{"city": city}).OrderBy("footprint")
-		} else if len(city) == 0 && len(state) > 0{
-		  query = leadersShoppingSource.Find(db.Cond{"state": state}).OrderBy("footprint")
-		}
-		break
-	case category=="transport":
-		if len(city) == 0 && len(state) == 0 {
-		  query = leadersTransportSource.Find().OrderBy("footprint")
-		} else if len(city) > 0 && len(state) > 0 {
-		  query = leadersTransportSource.Find(db.Cond{"city": city},db.Cond{"state": state}).OrderBy("footprint")
-		} else if len(city) > 0  && len(state) == 0 {
-		  query = leadersTransportSource.Find(db.Cond{"city": city}).OrderBy("footprint")
-		} else if len(city) == 0 && len(state) > 0{
-		  query = leadersTransportSource.Find(db.Cond{"state": state}).OrderBy("footprint")
-		}
-		break
-	default:
-		if len(city) == 0 && len(state) == 0 {
-		  query = leadersSource.Find().OrderBy("footprint")
-		} else if len(city) > 0 && len(state) > 0 {
-		  query = leadersSource.Find(db.Cond{"city": city},db.Cond{"state": state}).OrderBy("footprint")
-		} else if len(city) > 0  && len(state) == 0 {
-		  query = leadersSource.Find(db.Cond{"city": city}).OrderBy("footprint")
-		} else if len(city) == 0 && len(state) > 0{
-		  query = leadersSource.Find(db.Cond{"state": state}).OrderBy("footprint")
-		}
-		break
 	}
 
 	count, err := query.Count()
