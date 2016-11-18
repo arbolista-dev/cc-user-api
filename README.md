@@ -5,26 +5,37 @@
 
 ## Setup
 
-Copy and configure your environment variables:
+1. Copy and configure your environment variables (see definition below):
 
 ```sh
 cp .env.example .env
 export $(cat .env | xargs)
 ```
+2. Build and start stack (Postgres & User API)
 
-Run in this order:
+```
+make stack-up
+```
+
+or manually run in this order:
 ```
 make images
-
-make create-database
-
+make create-db
+make migrate-db
 make create-api
+```
+
+When using Rancher the container names are named differently. The container id's specified in the Makefile can easily be replaced doing a ('r-Default_userapi_1' specifying the existing name):
+```sh
+sed -i 's/user_api/r-Default_userapi_1/g' Makefile
 ```
 
 *Address is 127.0.0.1:8082*
 
-Enviromental variables:
+## Enviromental variables:
 ```
+CC_ENV - Defines environment to decide which commands are run in entrypoint [dev,test,prod]
+CC_DBHOST - Name of database host (should be PG docker link name)
 CC_DBNAME - Name of the postgres DB
 CC_DBUSER - Name of the postgres user
 CC_DBPASS - Password of the user

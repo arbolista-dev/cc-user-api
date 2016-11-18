@@ -1,3 +1,16 @@
 development:
   driver: postgres
+  open: user=$CC_DBUSER dbname=$CC_DBNAME password=$CC_DBPASS host=$CC_DBHOST sslmode=disable
+
+test:
+  driver: postgres
+  open: user=$CC_DBUSER dbname=$CC_DBNAME password=$CC_DBPASS host=$CC_DBHOST sslmode=disable
+
+prod:
+  driver: postgres
+  open: user=$CC_DBUSER dbname=$CC_DBNAME password=$CC_DBPASS host=$CC_DBHOST sslmode=disable
+
+# used for running db migrations from host / DEV
+local:
+  driver: postgres
   open: user=$CC_DBUSER dbname=$CC_DBNAME password=$CC_DBPASS port=15432 sslmode=disable

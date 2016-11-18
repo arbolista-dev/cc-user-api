@@ -1,0 +1,23 @@
+version: '2'
+services:
+  user_api:
+    container_name: "user_api"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cc:user_api
+    env_file: .env
+    links:
+      - postgres
+    ports:
+      - "8082:8082"
+
+  postgres:
+    container_name: "postgres"
+    image: postgres:9.4.5
+    ports:
+      - "15432:5432"
+    environment:
+      POSTGRES_USER: "${CC_DBUSER}"
+      POSTGRES_PASSWORD: "${CC_DBPASS}"
+      POSTGRES_DB: "${CC_DBNAME}"
