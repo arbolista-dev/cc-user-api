@@ -7,8 +7,8 @@ stack-up:
   (docker rm user_api || exit 0) && \
 	docker-compose build && \
 	docker-compose up -d --force-recreate postgres && \
-	echo 'Waiting for postgres to have started up..'; sleep 15 && \
-	docker-compose up -d --force-recreate user_api
+	echo 'Waiting for postgres to have started up..'; sleep 20 && \
+	docker-compose up -d user_api
 
 # Create images only
 images:
@@ -42,3 +42,9 @@ update-api:
 # Backup database
 backup-db:
 	docker exec -it postgres pg_dump -c -U$(CC_DBUSER) $(CC_DBNAME) > ~/$(shell date  +'%Y%m%d-%H%M%S')-$(CC_DBNAME)-dump.sql
+
+stack-test:
+	docker-compose build && \
+	docker-compose -f docker-compose.test.yml up -d postgres && \
+	echo 'Waiting for postgres to have started up..'; sleep 30 && \
+	docker-compose -f docker-compose.test.yml up user_api

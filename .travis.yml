@@ -8,4 +8,7 @@ services:
   - docker
 
 script:
-  - make stack-up
+  - docker-compose -f docker-compose.test.yml build
+  - docker-compose -f docker-compose.test.yml up -d postgres
+  - echo 'Waiting for postgres to have started up..'; sleep 30
+  - docker run -p 0.0.0.0:8082:8082 --name user_api --link postgres -e CC_DBNAME=$CC_DBNAME -e CC_DBUSER=$CC_DBUSER -e CC_DBPASS=$CC_DBPASS -e RUN_TEST=$RUN_TEST cc:user_api

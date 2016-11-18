@@ -6,11 +6,14 @@ services:
       context: .
       dockerfile: Dockerfile
     image: cc:user_api
-    env_file: .env
+    environment:
+      CC_DBNAME: ${CC_DBNAME}
+      CC_DBUSER: ${CC_DBUSER}
+      CC_DBPASS: ${CC_DBPASS}
     links:
       - postgres
     ports:
-      - 8082:8082
+      - "8082:8082"
 
   postgres:
     container_name: postgres
