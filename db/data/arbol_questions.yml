@@ -1,0 +1,62 @@
+# These are questions Arbol users will answer in goal configuration and action forms.
+# When these questions' answers are reported to Cool Climate user API,
+# they will be wrapped in Action modules, which translates these answers to Cool Climate
+# calculator API keys and values. They can thus be used to return a result for the action.
+- id: commute_mode
+  type: string
+  validation:
+    options:
+      - car
+      - motorcycle
+      - bicycle
+      - plane
+      - train
+      - public_transit
+- id: carpool_car_type
+  type: string
+  validation:
+    options:
+      - small_car
+      - medium_car
+      - large_car
+      - truck_suv
+      - minivan
+- id: commute_car_age
+  type: float
+  validation:
+    min: 0
+    max: 100
+- id: commute_car_efficiency
+  type: float
+  unit: miles / gallon
+  validation:
+    min: 0
+    max: 999
+- id: commute_distance
+  type: integer
+  unit: meters
+  validation:
+    min: 0
+- id: commute_carpool
+  type: bool
+- id: commute_fees_avoided
+  type: float
+  unit: 'usd'
+- id: commute_carpool_passengers
+  type: integer
+  validation:
+    min: 0
+- id: commute_work_distance
+  type: float
+  unit: meters
+- id: commute_work_time
+  type: float
+  unit: seconds
+- id: time_value
+  type: float
+  unit: 'usd / hr'
+  validation:
+    min: 0
+
+
+

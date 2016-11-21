@@ -1,0 +1,80 @@
+# List of Cool Climate goals
+# NOTE: API key = 'input_takeaction_' + id.
+- id: carpool
+  configuration:
+    - id: commute_car_type
+    - id: commute_car_age
+    - id: commute_car_efficiency
+  actions:
+    - id: commute
+      questions:
+        - id: commute_mode
+        - id: commute_distance
+        - id: commute_carpool
+          parent:
+            id: commute_mode
+            logic:
+              '==': car
+        - id: commute_fees_avoided
+          parent:
+            id: commute_carpool
+            logic:
+              '==': true
+        - id: commute_carpool_passengers
+          parent:
+            id: commute_carpool
+            logic:
+              '==': true
+        - id: commute_car_efficiency
+          parent:
+            id: commute_mode
+            logic:
+              '==': car
+- id: telecommute
+  configuration:
+    - id: commute_mode
+    - id: commute_car_efficiency
+      parent:
+        id: commute_mode
+        logic:
+          '==': car
+    - id: time_value
+  actions:
+    - id: telecommute
+      questions:
+        - id: commute_fees_avoided
+        - id: commute_work_distance
+        - id: commute_work_time
+- id: go_organic
+- id: low_carbon_diet
+- id: ride_my_bike
+- id: plant_trees
+- id: take_public_transportation
+- id: reduce_air_travel
+- id: turn_off_lights
+- id: practice_eco_driving
+- id: thermostat_winter
+- id: rechargeable_batteries
+- id: low_flow_faucets
+- id: maintain_my_vehicles
+- id: install_solar_heating
+- id: alternativefuel_vehicle
+- id: switch_to_cfl
+- id: water_efficient_landscaping
+- id: purchase_green_electricity
+- id: low_flow_toilet
+- id: power_mgmt_comp
+- id: T12toT8
+- id: energy_star_fridge
+- id: thermostat_summer
+- id: low_flow_showerheads
+- id: more_efficient_vehicle
+- id: reduce_comm_waste
+- id: tankless_water_heater
+- id: hybrid_vehicle
+- id: install_PV_panels
+- id: line_dry_clothing
+- id: energy_star_desktops
+- id: energy_star_printers
+- id: energy_star_copiers
+- id: print_double_sided
