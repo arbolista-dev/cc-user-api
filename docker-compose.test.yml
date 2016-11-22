@@ -7,13 +7,17 @@ services:
       dockerfile: Dockerfile
     image: cc:user_api
     environment:
+      CC_ENV: ${CC_ENV}
+      CC_DBHOST: ${CC_DBHOST}
       CC_DBNAME: ${CC_DBNAME}
       CC_DBUSER: ${CC_DBUSER}
       CC_DBPASS: ${CC_DBPASS}
+      CC_JWTSIGN: ${CC_JWTSIGN}
+      CC_SPARKPOSTKEY: ${CC_SPARKPOSTKEY}
     links:
       - postgres
     ports:
-      - "8082:8082"
+      - 8082:8082
 
   postgres:
     container_name: postgres
