@@ -1,0 +1,25 @@
+<html>
+<head>
+<style>
+    #header {
+        background-color: #99ccff;
+    }
+</style>
+
+    <title> Change password confirmation </title>
+</head>
+
+<body>
+    <div id="header">
+    Cool Climate
+    </div>
+
+<div>
+    {{if .confirmed}}
+    <h2>Your password has changed successfully</h2>
+    {{else}}
+    <h2>{{.err}}</h2>
+    {{end}}
+</div>
+</body>
+</html>

@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"github.com/arbolista-dev/cc-user-api/app/services"
 )
 
 var token string
@@ -160,6 +161,27 @@ func (t *AppTest) TestH_Delete_SUCCESS() {
 	log.Println(string(t.ResponseBody))
 	testSuccess(t, true, "")
 }
+
+func (t *AppTest) TestConfirmMail(){
+	data := map[string]string{"-name-": "prueba", "-link-":"http://www.google.com"}
+	err := services.SendMail("confirm", "test@sink.sendgrid.net", data)
+	if err != nil {
+		log.Print(err)
+		t.AssertEqual(err, nil)
+	}
+	t.AssertEqual(err, nil)
+}
+
+func (t *AppTest) TestResetMail(){
+	data := map[string]string{"-name-": "prueba", "-link-":"http://www.google.com"}
+	err := services.SendMail("reset", "test@sink.sendgrid.net", data)
+	if err != nil {
+		log.Print(err)
+		t.AssertEqual(err, nil)
+	}
+	t.AssertEqual(err, nil)
+}
+
 
 func (t *AppTest) Before() {
 	log.Println("+++++++++++++++++++++++++++++++++++++++++++++++++")

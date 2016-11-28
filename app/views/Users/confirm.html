@@ -1,0 +1,25 @@
+<html>
+<head>
+<style>
+	#header {
+		background-color: #99ccff;
+	}
+</style>
+
+    <title> Email confirmation </title>
+</head>
+
+<body>
+    <div id="header">
+    Cool Climate
+    </div>
+
+<div>
+    {{if .confirmed}}
+    <h2>Your email was successfully confirmed</h2>
+    {{else}}
+    <h2>{{.err}}</h2>
+    {{end}}
+</div>
+</body>
+</html>

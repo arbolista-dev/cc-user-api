@@ -29,6 +29,8 @@ type User struct {
 	TotalFootprint	types.JSONText `json:"total_footprint" db:"total_footprint"`
 	ResetHash       []byte         `json:"-" db:"reset_hash"`
 	ResetExpiration time.Time      `json:"-" db:"reset_expiration"`
+	EmailHash       []byte         `json:"-" db:"email_hash"`	
+	EmailExpiration	time.Time      `json:"-" db:"email_expiration"`
 }
 
 type UserLogin struct {
@@ -71,6 +73,7 @@ type TotalFootprint struct {
 }
 
 type Email struct {
+	FirstName       string         `json:"first_name" db:"first_name"`
 	Email		string	`json:"email"`
 }
 

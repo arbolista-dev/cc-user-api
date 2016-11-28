@@ -18,8 +18,11 @@ POST    /user/reset/req                        Users.PassResetRequest
 POST    /user/reset                            Users.PassResetConfirm
 GET     /user/leaders                          Users.ListLeaders
 GET     /user/locations                        Users.ListLocations
+GET     /user/test                             Users.Test
 
-GET     /page/passreset                        Page.PasswordReset
+GET     /user/passreset                        Users.PasswordReset
+GET     /user/confirm                          Users.Confirm
+
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

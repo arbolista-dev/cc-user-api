@@ -43,7 +43,11 @@ CC_DBADDRESS - Address of the postgres service
 
 CC_JWTSIGN - A secret string to sign JWT
 
-CC_SPARKPOSTKEY - The key of the sparkpost app
+CC_SENDGRID_APIKEY - The key of the SendGrid account
+CC_SENDGRID_TEMPLATE_CONFIRM - The template id for confirmation emails, must have a subtitution param named link
+CC_SENDGRID_TEMPLATE_RESET - The template id for reset passwords, must have a subtitution param named link
+CC_CONFIRMATION_MAIL - The email used as sender by SendGrid
+
 ```
 
 ## Routes
@@ -60,7 +64,9 @@ POST    /user/reset/req    // Request a password reset -> send email to user
 POST    /user/reset        // Confirm newly set password
 GET     /user/leaders      // Return leaders (paginated)
 GET     /user/locations    // Return available locations
-GET     /page/passreset    // Show password reset page
+GET     /user/passreset    // Show password reset page
+GET     /user/confirm      // Confirm the email account of the users
+
 ```
 
 ## Return types

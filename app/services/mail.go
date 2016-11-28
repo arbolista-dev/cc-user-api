@@ -6,72 +6,105 @@
 package services
 
 import (
-	"bytes"
+	"io/ioutil"
+	"log"
 	"encoding/json"
+	"bytes"
 	"net/http"
-	"os"
+	"github.com/revel/revel"
+
 )
 
 var client = &http.Client{}
 
 var apiKey string
-
-type contentAPI struct {
-	TemplateID string `json:"template_id"`
-}
+var sendMail string
+var templateId map[string]string
 
 type recipientAPI struct {
-	Address string `json:"address"`
+	Address string `json:"email"`
+	Name 	string `json:"name"`
 }
 
-var substitution map[string]string
 
-type transmissionApI struct {
-	Recipients       []recipientAPI    `json:"recipients"`
-	Content          contentAPI        `json:"content"`
-	SubstitutionData map[string]string `json:"substitution_data"`
+type substitutionAPI struct {
+	Name 	string 	`json:"name"`
 }
 
-func init() {
-	apiKey = os.Getenv("CC_SPARKPOSTKEY")
+type personalizationAPI struct {
+	Recipients       []recipientAPI    	`json:"to"`
+	Substitution     map[string]string  `json:"substitutions"`
+
+}
+
+
+type transmissionAPI struct {
+	TemplateId 		 string				`json:"template_id"`
+	Senders       	 recipientAPI    	`json:"from"`
+	Personalization  []personalizationAPI `json:"personalizations"`
+}
+
+func getConfig(key string) (result string) {
+	err := false
+	result, err = revel.Config.String(key)
+	if !err {
+		log.Fatal(key, " not configured");
+	}
+	return
+}
+
+func readConfig() {
+	templateId = make(map[string]string)
+	apiKey = getConfig("sendgrid.apikey")
+	templateId["confirm"] = getConfig("sendgrid.template.confirm")
+	templateId["reset"] = getConfig("sendgrid.template.reset")
+	sendMail= getConfig("sendgrid.mail")
 	// 	apiKey = "672c40cdb9bb75b6ccc81a9a080624877b516ca3"
 }
 
-func templateMail(template, address string, data map[string]string) (result []byte, err error) {
+func templateMail(template string, address string,  data map[string]string) (result []byte, err error) {
 	recipients := []recipientAPI{
 		recipientAPI{
 			Address: address,
 		},
 	}
-	request := transmissionApI{
-		Recipients: recipients,
-		Content: contentAPI{
-			TemplateID: template,
-		},
-		SubstitutionData: data,
+	sender := recipientAPI{
+		Address: sendMail,
+	}
+
+ 	personalization :=  []personalizationAPI{
+ 		personalizationAPI{
+ 			Recipients: recipients,
+ 			Substitution: data,
+ 		},
+ 	}
+
+	request := transmissionAPI{
+		TemplateId: templateId[template],
+		Personalization: personalization,
+		Senders: sender,
 	}
 	result, err = json.Marshal(request)
 	return
 }
 
-func SendMail(template, address string, data map[string]string) (err error) {
-	result, err := templateMail(template, address, data)
+func SendMail(template string, address string,  data map[string]string) (err error) {
+	readConfig()
+	jsonValue, _ := templateMail(template, address, data)
+	req, err := http.NewRequest("POST", "https://api.sendgrid.com/v3/mail/send", bytes.NewBuffer(jsonValue))
 	if err != nil {
+		log.Print("Send email Error: ", err)
 		return
 	}
-	// TODO - Revisar cuando la conexion con sparkpost falla
-	req, err := http.NewRequest("POST", "https://api.sparkpost.com/api/v1/transmissions?num_rcpt_errors=3", bytes.NewReader(result))
-	if err != nil {
-		return
-	}
-
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization", apiKey)
-
-	_, err = client.Do(req)
+	req.Header.Add("Authorization", "Bearer "+ apiKey)
+	resp, err := client.Do(req)
 	if err != nil {
-		return
+		log.Print("Send email Error: ", err)
 	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	log.Print("Body ",string(body))
 	return
 }

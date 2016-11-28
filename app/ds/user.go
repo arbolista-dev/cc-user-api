@@ -46,7 +46,7 @@ func GetSession(token string) (userID uint, jti string, err error) {
 	return
 }
 
-func Add(user models.User) (login map[string]interface{}, err error) {
+func Add(user models.User) (login map[string]interface{}, userID uint, err error) {
 	hashPassword(&user)
 
 	user.MarshalDB()
@@ -61,7 +61,7 @@ func Add(user models.User) (login map[string]interface{}, err error) {
 		}
 		return
 	}
-	userID := uint(temp.(int64))
+	userID = uint(temp.(int64))
 
 	token, err := newToken(userID)
 	if err != nil {
@@ -81,6 +81,7 @@ func Add(user models.User) (login map[string]interface{}, err error) {
 	}
 
 	login = map[string]interface{}{
+		"user_id": userID,
 		"name":    user.FirstName,
 		"token":   sToken,
 		"answers": user.Answers.String(),
@@ -94,7 +95,7 @@ func Delete(userID uint) (err error) {
 }
 
 func ValidateFacebookToken(logRequest models.UserFacebook) (facebookData models.FacebookToken,err error) {
-	resp, err := http.Get("https://graph.facebook.com/v2.5/"+logRequest.FacebookID+"?fields=id,first_name,last_name,email&access_token="+logRequest.FacebookToken);
+	resp, err := http.Get("https://graph.facebook.com/v2.5/"+logRequest.FacebookID+"?fields=id,first_name,last_name,email&access_token="+logRequest.FacebookToken)
 	if err != nil {
   	return
   }
@@ -130,7 +131,7 @@ func LoginFacebook(logRequest models.UserFacebook) (login map[string]interface{}
 		user.FirstName = facebookData.FirstName;
 		user.LastName = facebookData.LastName;
 		user.Answers = logRequest.Answers;
-		login, err = Add(user);
+		login, _, err = Add(user);
 		return
 	}
 
@@ -266,7 +267,18 @@ func UpdateAnswers(userID uint, userAnswers models.AnswersUpdate) (err error) {
 	return
 }
 
-func PassResetRequest(email string) (userID uint, token string, err error) {
+func ConfirmRequest(email string) (token string, err error) {
+	var user models.User
+	err = userSource.Find(db.Cond{"email": email}).One(&user)
+	if err != nil {
+		return
+	}
+	token = hashConfirm(&user)
+	err = userSource.Find(db.Cond{"user_id": user.UserID}).Update(user)
+	return
+}
+
+func PassResetRequest(email string) (userID uint, token string, name string, err error) {
 	var user models.User
 	err = userSource.Find(db.Cond{"email": email}).One(&user)
 	if err != nil {
@@ -274,7 +286,37 @@ func PassResetRequest(email string) (userID uint, token string, err error) {
 	}
 	token = hashReset(&user)
 	userID = user.UserID
+	name = user.FirstName
 	err = userSource.Find(db.Cond{"user_id": user.UserID}).Update(user)
+	return
+}
+
+func ConfirmEmail(userID uint, token string) (err error) {
+	var user models.User
+	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
+	if err != nil {
+		return
+	}
+	user.UnmarshalDB()
+	if user.ResetExpiration.After(time.Now()) {
+		user.ResetHash = []byte{}
+		user.ResetExpiration = time.Time{}
+		err = errors.New(`The link has expired, or your account has already confirmed`)
+		return
+	}
+
+	err = bcrypt.CompareHashAndPassword(user.EmailHash, []byte(token))
+	if err != nil {
+		err = errors.New(`The token is corrupt`)
+		return err
+	}
+	user.EmailHash = []byte{}
+	user.EmailExpiration = time.Time{}
+	user.MarshalDB()
+	err = userSource.Find(db.Cond{"user_id": user.UserID}).Update(user)
+	if err != nil {
+		return
+	}
 	return
 }
 
@@ -288,13 +330,13 @@ func PassResetConfirm(userID uint, token, password string) (err error) {
 	if user.ResetExpiration.After(time.Now()) {
 		user.ResetHash = []byte{}
 		user.ResetExpiration = time.Time{}
-		err = errors.New(`{"password-reset": "expired"}`)
+		err = errors.New(`The link has expired! please click once again "Forgot your password?" in the Cool Climate Calculator`)
 		return
 	}
 
 	err = bcrypt.CompareHashAndPassword(user.ResetHash, []byte(token))
 	if err != nil {
-		err = errors.New(`{"reset-token": "corrupt"}`)
+		err = errors.New(`The link is invalid, please click once again "Forgot your password?" in the Cool Climate Calculator`)
 		return err
 	}
 
@@ -364,6 +406,16 @@ func hashPassword(user *models.User) {
 	user.Salt = b
 }
 
+func hashConfirm(user *models.User) (token string) {
+	token = randString(10)
+	var err error
+	user.EmailHash, err = bcrypt.GenerateFromPassword([]byte(token), bcrypt.DefaultCost)
+	if err != nil {
+		panic(err)
+	}
+	user.EmailExpiration = time.Now().Add(time.Minute * 5)
+	return
+}
 func hashReset(user *models.User) (token string) {
 	token = randString(10)
 	var err error
