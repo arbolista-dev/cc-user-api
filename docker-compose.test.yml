@@ -13,12 +13,15 @@ services:
       CC_DBUSER: ${CC_DBUSER}
       CC_DBPASS: ${CC_DBPASS}
       CC_JWTSIGN: ${CC_JWTSIGN}
-      CC_SPARKPOSTKEY: ${CC_SPARKPOSTKEY}
+      CC_SENDGRID_APIKEY: ${CC_SENDGRID_APIKEY}
+      CC_SENDGRID_TEMPLATE_CONFIRM: ${CC_SENDGRID_TEMPLATE_CONFIRM}
+      CC_SENDGRID_TEMPLATE_RESET: ${CC_SENDGRID_TEMPLATE_RESET}
+      CC_CONFIRMATION_MAIL: ${CC_CONFIRMATION_MAIL}
+      CC_SERVER_HOST: ${CC_SERVER_HOST}
     links:
       - postgres
     ports:
       - 8082:8082
-
   postgres:
     container_name: postgres
     image: postgres:9.4.5

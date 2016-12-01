@@ -162,22 +162,20 @@ func (t *AppTest) TestH_Delete_SUCCESS() {
 	testSuccess(t, true, "")
 }
 
-func (t *AppTest) TestConfirmMail(){
+func (t *AppTest) TestI_ConfirmMail(){
 	data := map[string]string{"-name-": "prueba", "-link-":"http://www.google.com"}
 	err := services.SendMail("confirm", "test@sink.sendgrid.net", data)
 	if err != nil {
 		log.Print(err)
-		t.AssertEqual(err, nil)
 	}
 	t.AssertEqual(err, nil)
 }
 
-func (t *AppTest) TestResetMail(){
+func (t *AppTest) TestI_ResetMail(){
 	data := map[string]string{"-name-": "prueba", "-link-":"http://www.google.com"}
 	err := services.SendMail("reset", "test@sink.sendgrid.net", data)
 	if err != nil {
 		log.Print(err)
-		t.AssertEqual(err, nil)
 	}
 	t.AssertEqual(err, nil)
 }

@@ -6,11 +6,13 @@
 package services
 
 import (
+	"errors"
 	"io/ioutil"
 	"log"
 	"encoding/json"
 	"bytes"
 	"net/http"
+	"strings"
 	"github.com/revel/revel"
 
 )
@@ -48,7 +50,7 @@ func getConfig(key string) (result string) {
 	err := false
 	result, err = revel.Config.String(key)
 	if !err {
-		log.Fatal(key, " not configured");
+		log.Print(key, " not configured");
 	}
 	return
 }
@@ -105,6 +107,8 @@ func SendMail(template string, address string,  data map[string]string) (err err
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
-	log.Print("Body ",string(body))
+	if strings.TrimSpace(string(body)) != "" {
+		err = errors.New(`{"email": "failed"}`)
+	}
 	return
 }

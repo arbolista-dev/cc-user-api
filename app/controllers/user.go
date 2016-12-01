@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"strconv"
 	"math"
+	"strings"
 )
 
 type Users struct {
@@ -125,12 +126,6 @@ func (c Users) ListLocations() revel.Result {
 	}
 
 	return c.Data(locations)
-}
-
-func (c Users) Test() revel.Result {
-	data := map[string]string{"-name-": "Daniel","-link-":"https://www.google.com"}
-	services.SendMail("confirm","danyel.nerv@gmail.com",data)
-	return c.OK()
 }
 
 func (c Users) Add() revel.Result {
@@ -370,14 +365,18 @@ func (c Users) Confirm(id uint,token string) revel.Result {
 
 func ConfirmURL(userID uint, token string) (uri string) {
 	var host string
-	if revel.Server.Addr[0] == ':' {
-		host = "127.0.0.1" + revel.Server.Addr
-	} else {
-		host = revel.Server.Addr
-	}
+	var scheme string
+	//Get the host and port from configuration
+	host = revel.Config.StringDefault("http.addr","127.0.0.1") + revel.Config.StringDefault("http.port","9000")
+	//If we set server.host this override the host name in url
 	host = revel.Config.StringDefault("server.host",host)
+	if revel.Config.BoolDefault("http.ssl",false) {
+		scheme = "https"
+	}else {
+		scheme = "http"
+	}
 	u := url.URL{}
-	u.Scheme = "http"
+	u.Scheme =  scheme
 	u.Host = host
 	u.Path = "/user/confirm"
 	q := u.Query()
@@ -389,15 +388,22 @@ func ConfirmURL(userID uint, token string) (uri string) {
 
 func PasswordResetURL(userID uint, token string) (uri string) {
 	var host string
-	
-	if revel.Server.Addr[0] == ':' {
-		host = "127.0.0.1" + revel.Server.Addr
-	} else {
-		host = revel.Server.Addr
+	var scheme string
+	host = revel.Config.StringDefault("http.addr","127.0.0.1")
+	if strings.TrimSpace(host) == "" {
+		host = "127.0.0.1"
 	}
+	//Get the host and port from configuration
+	host = host +":"+ revel.Config.StringDefault("http.port","9000")
+	//If we set server.host this override the host name in url
 	host = revel.Config.StringDefault("server.host",host)
+	if revel.Config.BoolDefault("http.ssl",false) {
+		scheme = "https"
+	}else {
+		scheme = "http"
+	}
 	u := url.URL{}
-	u.Scheme = "http"
+	u.Scheme =  scheme
 	u.Host = host
 	u.Path = "/user/passreset"
 	q := u.Query()

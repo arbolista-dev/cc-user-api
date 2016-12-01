@@ -18,7 +18,6 @@ POST    /user/reset/req                        Users.PassResetRequest
 POST    /user/reset                            Users.PassResetConfirm
 GET     /user/leaders                          Users.ListLeaders
 GET     /user/locations                        Users.ListLocations
-GET     /user/test                             Users.Test
 
 GET     /user/passreset                        Users.PasswordReset
 GET     /user/confirm                          Users.Confirm

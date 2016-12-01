@@ -301,13 +301,13 @@ func ConfirmEmail(userID uint, token string) (err error) {
 	if user.ResetExpiration.After(time.Now()) {
 		user.ResetHash = []byte{}
 		user.ResetExpiration = time.Time{}
-		err = errors.New(`The link has expired, or your account has already confirmed`)
+		err = errors.New(`The link has expired`)
 		return
 	}
 
 	err = bcrypt.CompareHashAndPassword(user.EmailHash, []byte(token))
 	if err != nil {
-		err = errors.New(`The token is corrupt`)
+		err = errors.New(`The link is corrupt`)
 		return err
 	}
 	user.EmailHash = []byte{}
@@ -413,7 +413,7 @@ func hashConfirm(user *models.User) (token string) {
 	if err != nil {
 		panic(err)
 	}
-	user.EmailExpiration = time.Now().Add(time.Minute * 5)
+	user.EmailExpiration = time.Now().Add(time.Hour * 5)
 	return
 }
 func hashReset(user *models.User) (token string) {
@@ -423,6 +423,6 @@ func hashReset(user *models.User) (token string) {
 	if err != nil {
 		panic(err)
 	}
-	user.ResetExpiration = time.Now().Add(time.Minute * 5)
+	user.ResetExpiration = time.Now().Add(time.Hour * 48)
 	return
 }

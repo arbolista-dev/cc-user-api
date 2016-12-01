@@ -48,6 +48,7 @@ CC_SENDGRID_TEMPLATE_CONFIRM - The template id for confirmation emails, must hav
 CC_SENDGRID_TEMPLATE_RESET - The template id for reset passwords, must have a subtitution param named link
 CC_CONFIRMATION_MAIL - The email used as sender by SendGrid
 
+CC_SERVER_HOST - Host used to create the URL
 ```
 
 ## Routes
