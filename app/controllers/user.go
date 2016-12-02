@@ -152,17 +152,14 @@ func (c Users) Add() revel.Result {
 	if err != nil {
 		return c.Error(err)
 	}
-
-
-
-	data := map[string]string{"-name-": newUser.FirstName, "-link-": ConfirmURL( userID, token)}
-	err = services.SendMail("confirm", newUser.Email, data)
+	err = SendUserMail( newUser.FirstName, userID,token, newUser.Email);
 	if err != nil {
 		return c.Error(err)
 	}
-
 	return c.Data(login)
 }
+
+
 
 func (c Users) Delete() revel.Result {
 	userID, _, err := c.GetSession()
@@ -330,14 +327,22 @@ func (c Users) PassResetRequest() revel.Result {
 	return c.OK()
 }
 
-func (c Users) PassResetConfirm(userID uint, token, password string) revel.Result {
-	err := ds.PassResetConfirm(userID, token, password)
+func (c Users) PassResetConfirm() revel.Result {
+	body, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
-		confirmed := false
-		return c.Render(err,confirmed)
+		return c.Error(err)
+	}
+
+	var reset models.PasswordReset
+	err = json.Unmarshal(body, &reset)
+	if err != nil {
+		return c.Error(err)
+	}
+	err = ds.PassResetConfirm(reset.Id, reset.Token, reset.Password)
+	if err != nil {
+		return c.Error(err)
 	}else {
-		confirmed := true
-		return c.Render(confirmed)
+		return c.OK()
 	}
 }
 
@@ -353,14 +358,48 @@ func (c Users) Confirm(id uint,token string) revel.Result {
 	// req.Header.Set("Content-Type", contentType)
 	// fmt.Println("EL pass: ", reset.Password)
 	err := ds.ConfirmEmail(id, token)
-
+	host := revel.Config.StringDefault("server.confirm.host","127.0.0.1:3000")
 	if err != nil {
-		confirmed := false
-		return c.Render(err,confirmed)
+		return c.Redirect("http://"+host+"/en/settings?type=confirm&error="+err.Error())
 	}else {
-		confirmed := true
-		return c.Render(confirmed)
+		return c.Redirect("http://"+host+"/en/settings?type=confirm")
 	}
+}
+func (c Users) NeedActivate() revel.Result {
+	userID, _, err := c.GetSession()
+	if err != nil {
+		return c.Error(err)
+	}
+	activate, err := ds.NeedActivate(userID)
+	if err != nil {
+		return c.Error(err)
+	}
+	return c.Data(activate)
+}
+
+func (c Users) SendActivate() revel.Result {
+	userID, _, err := c.GetSession()
+	if err != nil {
+		return c.Error(err)
+	}
+	activate, err := ds.NeedActivate(userID)
+	if err != nil {
+		return c.Error(err)
+	}
+	if activate.Need {
+		token, err := ds.ConfirmRequest(activate.Email)
+		if err != nil {
+			return c.Error(err)
+		}
+		err = SendUserMail(activate.Name, userID, token, activate.Email )
+	}
+	return c.Data(activate)
+}
+
+func SendUserMail(name string, userID uint, token string, email string ) (err error) {
+	data := map[string]string{"-name-": name, "-link-": ConfirmURL( userID, token)}
+	err = services.SendMail("confirm", email, data)
+	return 
 }
 
 func ConfirmURL(userID uint, token string) (uri string) {
@@ -369,7 +408,7 @@ func ConfirmURL(userID uint, token string) (uri string) {
 	//Get the host and port from configuration
 	host = revel.Config.StringDefault("http.addr","127.0.0.1") + revel.Config.StringDefault("http.port","9000")
 	//If we set server.host this override the host name in url
-	host = revel.Config.StringDefault("server.host",host)
+	host = revel.Config.StringDefault("server.reset.host",host)
 	if revel.Config.BoolDefault("http.ssl",false) {
 		scheme = "https"
 	}else {
@@ -396,7 +435,7 @@ func PasswordResetURL(userID uint, token string) (uri string) {
 	//Get the host and port from configuration
 	host = host +":"+ revel.Config.StringDefault("http.port","9000")
 	//If we set server.host this override the host name in url
-	host = revel.Config.StringDefault("server.host",host)
+	host = revel.Config.StringDefault("server.reset.host",host)
 	if revel.Config.BoolDefault("http.ssl",false) {
 		scheme = "https"
 	}else {
@@ -405,8 +444,9 @@ func PasswordResetURL(userID uint, token string) (uri string) {
 	u := url.URL{}
 	u.Scheme =  scheme
 	u.Host = host
-	u.Path = "/user/passreset"
+	u.Path = "/en/settings"
 	q := u.Query()
+	q.Set("type","reset")
 	q.Set("id", strconv.Itoa(int(userID)))
 	q.Set("token", token)
 	u.RawQuery = q.Encode()

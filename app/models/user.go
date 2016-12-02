@@ -91,6 +91,16 @@ type Leader struct {
 	HouseholdSize			int 				 	 `json:"household_size" db:"household_size"`
 	TotalFootprint	types.JSONText 	 `json:"total_footprint" db:"total_footprint"`
 }
+type NeedActivate struct { 
+	Need 				bool			 `json:"need"`
+	Name 				string			 `json:"-"`
+	Email 				string			 `json:"-"`
+}
+type PasswordReset struct { 
+	Id 					uint			 `json:"id"`
+	Token 				string			 `json:"token"`
+	Password 			string			 `json:"password"`
+}
 
 func (user *User) Validate(v *revel.Validation) {
 	v.Required(user.FirstName)

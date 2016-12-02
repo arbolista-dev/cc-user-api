@@ -330,13 +330,13 @@ func PassResetConfirm(userID uint, token, password string) (err error) {
 	if user.ResetExpiration.After(time.Now()) {
 		user.ResetHash = []byte{}
 		user.ResetExpiration = time.Time{}
-		err = errors.New(`The link has expired! please click once again "Forgot your password?" in the Cool Climate Calculator`)
+		err = errors.New(`{"password-reset":"expired"}`)
 		return
 	}
 
 	err = bcrypt.CompareHashAndPassword(user.ResetHash, []byte(token))
 	if err != nil {
-		err = errors.New(`The link is invalid, please click once again "Forgot your password?" in the Cool Climate Calculator`)
+		err = errors.New(`{"reset-token":"corrupt"}`)
 		return err
 	}
 
@@ -394,6 +394,26 @@ func ListLocations() (locations []models.Location, err error) {
 		return
 	}
 	return
+}
+func NeedActivate(userID uint) (activate models.NeedActivate, err error) {
+	var user models.User
+	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
+	if err != nil {
+		return
+	}
+	
+	if user.EmailHash == nil || len(user.EmailHash) == 0 {
+		activate = models.NeedActivate{
+			Need: false,
+		}
+	}else {
+		activate = models.NeedActivate{
+			Need: true,
+			Name: user.FirstName,
+			Email: user.Email,
+		}
+	}
+	return 
 }
 
 func hashPassword(user *models.User) {
