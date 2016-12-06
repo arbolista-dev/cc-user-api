@@ -1,6 +1,10 @@
 package controllers
 
 import (
+	"bytes"
+	"image"
+	_ "image/jpeg"
+	_ "image/png"
 	"encoding/json"
 	"github.com/arbolista-dev/cc-user-api/app/ds"
 	"github.com/arbolista-dev/cc-user-api/app/models"
@@ -10,6 +14,12 @@ import (
 	"net/url"
 	"strconv"
 	"math"
+)
+
+const (
+	_      = iota
+	KB int = 1 << (10 * iota)
+	MB
 )
 
 type Users struct {
@@ -261,7 +271,6 @@ func FootprintAnswerToUint(name string, answersMap map[string]interface{}) (foot
 
 }
 
-
 func (c Users) SetLocation() revel.Result {
 	userID, _, err := c.GetSession()
 	if err != nil {
@@ -283,6 +292,38 @@ func (c Users) SetLocation() revel.Result {
 	if err != nil {
 		return c.Error(err)
 	}
+	return c.OK()
+}
+
+func (c Users) SetPhoto(file []byte) revel.Result {
+	userID, _, err := c.GetSession()
+	if err != nil {
+		return c.Error(err)
+	}
+
+	c.Validation.Required(file)
+	c.Validation.MinSize(file, 2*KB)
+	c.Validation.MaxSize(file, 4*MB)
+
+	conf, format, err := image.DecodeConfig(bytes.NewReader(file))
+	if err != nil {
+		return c.Error(err)
+	}
+
+	c.Validation.Required(err == nil).Key("file")
+	c.Validation.Required(format == "jpeg" || format == "png" || format == "gif").Key("file")
+	c.Validation.Required(conf.Height >= 150 && conf.Width >= 150).Key("file")
+
+	photo_url, err := services.UploadFile(file, format)
+	if err != nil {
+		return c.Error(err)
+	}
+
+	err = ds.SetPhoto(userID, photo_url)
+	if err != nil {
+		return c.Error(err)
+	}
+
 	return c.OK()
 }
 

@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"github.com/arbolista-dev/cc-user-api/app/models"
+	"github.com/arbolista-dev/cc-user-api/app/utils"
 	"golang.org/x/crypto/bcrypt"
 	"os"
 	"time"
@@ -266,6 +267,17 @@ func SetLocation(userID uint, location models.Location) (err error) {
 	return
 }
 
+func SetPhoto(userID uint, photo_url string) (err error) {
+	var user models.User
+	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
+	if err != nil {
+		return
+	}
+	user.PhotoUrl = photo_url
+	err = userSource.Find(db.Cond{"user_id": userID}).Update(user)
+	return
+}
+
 func Update(userID uint, userNew models.User) (err error) {
 	var user models.User
 	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
@@ -389,7 +401,7 @@ func hashPassword(user *models.User) {
 }
 
 func hashReset(user *models.User) (token string) {
-	token = randString(10)
+	token = utils.RandString(10)
 	var err error
 	user.ResetHash, err = bcrypt.GenerateFromPassword([]byte(token), bcrypt.DefaultCost)
 	if err != nil {

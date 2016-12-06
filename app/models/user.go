@@ -27,6 +27,7 @@ type User struct {
 	Country					string 				 `json:"country" db:"country"`
 	HouseholdSize		int 				 	 `json:"household_size" db:"household_size"`
 	TotalFootprint	types.JSONText `json:"total_footprint" db:"total_footprint"`
+	PhotoUrl				string				 `json:"photo_url" db:"photo_url"`
 	ResetHash       []byte         `json:"-" db:"reset_hash"`
 	ResetExpiration time.Time      `json:"-" db:"reset_expiration"`
 }
