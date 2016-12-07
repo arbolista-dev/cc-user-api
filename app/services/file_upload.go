@@ -20,7 +20,7 @@ func init() {
 	awsAkid = os.Getenv("AWS_ACCESS_KEY_ID")
 	awsSak = os.Getenv("AWS_SECRET_ACCESS_KEY")
 	awsEndpoint = os.Getenv("AWS_ENDPOINT")
-	profileDirectory = "/profile-photos/"
+	profileDirectory = os.Getenv("AWS_BUCKET_SUBDIR")
 }
 
 func UploadFile(file []byte, format string) (location string, err error) {

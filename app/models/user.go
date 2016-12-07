@@ -88,7 +88,8 @@ type Leader struct {
 	State							string 				 `json:"state" db:"state"`
 	County						string 				 `json:"county" db:"county"`
 	HouseholdSize			int 				 	 `json:"household_size" db:"household_size"`
-	TotalFootprint	types.JSONText 	 `json:"total_footprint" db:"total_footprint"`
+	TotalFootprint		types.JSONText `json:"total_footprint" db:"total_footprint"`
+	PhotoUrl					string				 `json:"photo_url" db:"photo_url"`
 }
 
 func (user *User) Validate(v *revel.Validation) {

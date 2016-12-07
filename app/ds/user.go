@@ -250,6 +250,7 @@ func Show(userID uint) (profile map[string]interface{}, err error) {
 		"county":  					user.County,
 		"household_size": 	user.HouseholdSize,
 		"total_footprint": 	user.TotalFootprint.String(),
+		"photo_url": 				user.PhotoUrl,
 	}
 	return
 }
@@ -267,7 +268,7 @@ func SetLocation(userID uint, location models.Location) (err error) {
 	return
 }
 
-func SetPhoto(userID uint, photo_url string) (err error) {
+func SetPhoto(userID uint, photo_url string) (photo_set map[string]interface{}, err error) {
 	var user models.User
 	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
 	if err != nil {
@@ -275,6 +276,9 @@ func SetPhoto(userID uint, photo_url string) (err error) {
 	}
 	user.PhotoUrl = photo_url
 	err = userSource.Find(db.Cond{"user_id": userID}).Update(user)
+	photo_set = map[string]interface{}{
+		"photo_url": photo_url,
+	}
 	return
 }
 

@@ -319,12 +319,12 @@ func (c Users) SetPhoto(file []byte) revel.Result {
 		return c.Error(err)
 	}
 
-	err = ds.SetPhoto(userID, photo_url)
+	photo_set, err := ds.SetPhoto(userID, photo_url)
 	if err != nil {
 		return c.Error(err)
 	}
 
-	return c.OK()
+	return c.Data(photo_set)
 }
 
 func (c Users) Update() revel.Result {
