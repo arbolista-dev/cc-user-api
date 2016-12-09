@@ -4,8 +4,12 @@ import (
 	"encoding/json"
 	"github.com/revel/revel/testing"
 	"io"
+	"os"
 	"log"
 	"net/http"
+	"net/textproto"
+	"mime/multipart"
+	"bytes"
 	"strings"
 	"strconv"
 )
@@ -41,6 +45,45 @@ func myVERB(verb, path string, contentType string, reader io.Reader, token strin
 		panic(err)
 	}
 	req.Header.Set("Authorization", token)
+	return req
+}
+
+func fileUploadRequest(path string, filepath string, token string, t *AppTest) *http.Request {
+	var err error
+	var req *http.Request
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	file, err := os.Open(filepath)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	log.Println("file", file)
+
+	h := textproto.MIMEHeader{}
+	h.Set("Content-Type", "multipart/form-data")
+
+	part, err := writer.CreatePart(h)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = io.Copy(part, file)
+	if err != nil {
+		panic(err)
+	}
+
+	err = writer.Close()
+	t.AssertEqual(nil, err)
+
+	req, err = http.NewRequest("POST", t.BaseUrl()+path, body)
+	req.Header.Set("Authorization", token)
+	if err != nil {
+		panic(err)
+	}
 	return req
 }
 
@@ -131,6 +174,17 @@ func (t *AppTest) TestE3_SetLocation_SUCCESS() {
 	testSuccess(t, true, "")
 }
 
+// func (t *AppTest) TestE4_SetPhoto_SUCCESS() {
+// 	filePath, _ := os.Getwd()
+// 	filePath += "/tests/profile-photo.jpg"
+// 	log.Println("filepath", filePath)
+// 	req := fileUploadRequest("/user/photo", filePath, token, t)
+// 	t.NewTestRequest(req).Send()
+// 	t.AssertOk()
+// 	log.Println(string(t.ResponseBody))
+// 	testSuccess(t, true, "")
+// }
+
 func (t *AppTest) TestE_UserLogout_SUCCESS() {
 	req := myVERB("GET", "/user/logout", "", nil, token, t)
 	t.NewTestRequest(req).Send()
@@ -153,7 +207,7 @@ func (t *AppTest) TestF1_ListLeaders_SUCCESS() {
 		_userID := int(listRes.Data.(map[string]interface{})["list"].([]interface{})[0].(map[string]interface{})["user_id"].(float64))
 		userID = strconv.Itoa(_userID)
 		log.Println(string(t.ResponseBody))
-		log.Printf("Setting userID to: ", userID)
+		log.Printf("Setting userID for retrieving profile to: ", userID)
 	}
 	testSuccess(t, true, "")
 }

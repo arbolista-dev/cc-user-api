@@ -14,7 +14,15 @@ var userBody = `{
 
 var userBody_update = `{
   "first_name": "Juanito",
-  "last_name" : "Perezin"
+  "last_name" : "Perezin",
+  "profile_data": {
+    "facebook": "UC-Berkeley-CoolClimate-Network-161909000540511",
+    "twitter": "coolclimatenw",
+    "instagram": "coolcalifornia",
+    "linkedin": "company/1293183",
+    "medium": "@nature_org",
+    "intro": "Hello, I'm a climate activist"
+  }
 }`
 
 var loginBody = `{

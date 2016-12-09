@@ -241,6 +241,12 @@ func Show(userID uint) (profile map[string]interface{}, err error) {
 		return
 	}
 
+	var profileData models.ProfileData
+	err = json.Unmarshal(user.ProfileData, &profileData)
+	if err != nil {
+		return
+	}
+
 	profile = map[string]interface{}{
 		"user_id":    			user.UserID,
 		"first_name": 			user.FirstName,
@@ -251,6 +257,7 @@ func Show(userID uint) (profile map[string]interface{}, err error) {
 		"household_size": 	user.HouseholdSize,
 		"total_footprint": 	user.TotalFootprint.String(),
 		"photo_url": 				user.PhotoUrl,
+		"profile_data":			profileData,
 	}
 	return
 }

@@ -305,6 +305,7 @@ func (c Users) SetPhoto(file []byte) revel.Result {
 	c.Validation.MinSize(file, 2*KB)
 	c.Validation.MaxSize(file, 4*MB)
 
+
 	conf, format, err := image.DecodeConfig(bytes.NewReader(file))
 	if err != nil {
 		return c.Error(err)
