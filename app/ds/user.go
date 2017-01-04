@@ -233,11 +233,16 @@ func LogoutAll(userID uint) (err error) {
 	return
 }
 
-func Show(userID uint) (profile map[string]interface{}, err error) {
+func Show(userID uint, auth bool) (profile map[string]interface{}, err error) {
 	var user models.Leader
 	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
 	if err != nil {
 		err = errors.New(`{"profile": "non-existent"}`)
+		return
+	}
+
+	if user.Public == false && auth == false {
+		err = errors.New(`{"profile": "not-public"}`)
 		return
 	}
 
@@ -258,6 +263,7 @@ func Show(userID uint) (profile map[string]interface{}, err error) {
 		"total_footprint": 	user.TotalFootprint.String(),
 		"photo_url": 				user.PhotoUrl,
 		"profile_data":			profileData,
+		"public":						user.Public,
 	}
 	return
 }
@@ -362,7 +368,7 @@ func PassResetConfirm(userID uint, token, password string) (err error) {
 
 func ListLeaders(limit int, offset int, state string, household_size int) (leaders models.PaginatedLeaders, err error) {
 
-	if household_size != 0 {
+	if household_size != -1 {
 		if len(state) == 0 {
 			query = leadersSource.Find(db.Cond{"household_size": household_size})
 		} else if len(state) > 0 {

@@ -101,6 +101,7 @@ type Leader struct {
 	TotalFootprint		types.JSONText `json:"total_footprint" db:"total_footprint"`
 	PhotoUrl					string				 `json:"photo_url" db:"photo_url"`
 	ProfileData				types.JSONText `json:"profile_data" db:"profile_data"`
+	Public						bool				 	 `json:"public" db:"public"`
 }
 
 func (user *User) Validate(v *revel.Validation) {
@@ -188,6 +189,9 @@ func (u *User) Update(n User) {
 	}
 	if n.Email != "" {
 		u.Email = n.Email
+	}
+	if n.Public || !n.Public {
+		u.Public = n.Public
 	}
 	if n.ProfileData != nil {
 		u.ProfileData = n.ProfileData

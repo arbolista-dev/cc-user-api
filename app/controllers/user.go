@@ -90,7 +90,7 @@ func (c Users) LogoutAll() revel.Result {
 
 func (c Users) ListLeaders() revel.Result {
 
-	limit, offset, state, household_size := 10, 0, "", 0
+	limit, offset, state, household_size := 10, 0, "", -1
 
 	if len(c.Params.Values) != 0 {
 		if value, ok := c.Params.Values["limit"]; ok {
@@ -182,13 +182,23 @@ func (c Users) Delete() revel.Result {
 }
 
 func (c Users) Show(userID uint) revel.Result {
-	user, err := ds.Show(userID)
+	auth := true
+	uID, _, err := c.GetSession()
+	if err != nil {
+		auth = false
+	}
+	if uID != userID {
+		auth = false
+	}
+
+	user, err := ds.Show(userID, auth)
 	if err != nil {
 		return c.Error(err)
 	}
 
 	return c.Data(user)
 }
+
 
 func (c Users) UpdateAnswers() revel.Result {
 	userID, _, err := c.GetSession()
