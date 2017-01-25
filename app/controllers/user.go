@@ -199,6 +199,28 @@ func (c Users) Show(userID uint) revel.Result {
 	return c.Data(user)
 }
 
+func (c Users) UpdateActions() revel.Result {
+  userID, _, err := c.GetSession()
+  if err != nil {
+    return c.Error(err)
+  }
+
+  body, err := ioutil.ReadAll(c.Request.Body)
+  if err != nil {
+    return c.Error(err)
+  }
+  var update models.ActionUpdate
+  err = json.Unmarshal(body, &update)
+  if err != nil {
+    return c.Error(err)
+  }
+
+  err = ds.UpdateActions(userID, update)
+  if err != nil {
+    return c.Error(err)
+  }
+  return c.OK()
+}
 
 func (c Users) UpdateAnswers() revel.Result {
 	userID, _, err := c.GetSession()
