@@ -174,8 +174,8 @@ func (t *AppTest) TestE3_SetLocation_SUCCESS() {
 	testSuccess(t, true, "")
 }
 
-func (t *AppTest) TestE4_UpdateActions_SUCCESS() {
-	req := myVERB("PUT", "/user/actions", "application/json; charset=utf-8", strings.NewReader(actions_update), token, t)
+func (t *AppTest) TestE4_UpdateUserGoals_SUCCESS() {
+	req := myVERB("PUT", "/user/goals", "application/json; charset=utf-8", strings.NewReader(user_goals_update), token, t)
 	t.NewTestRequest(req).Send()
 	t.AssertOk()
 	t.AssertContentType("application/json; charset=utf-8")
@@ -254,8 +254,8 @@ func (t *AppTest) TestH_UserLogin_SUCCESS() {
 	t.TestC_Login_SUCCESS()
 }
 
-func (t *AppTest) TestI_RetrieveUserActions_SUCCESS() {
-	req := myVERB("GET", "/user/actions", "", nil, token, t)
+func (t *AppTest) TestI_RetrieveUserGoals_SUCCESS() {
+	req := myVERB("GET", "/user/goals", "", nil, token, t)
 	t.NewTestRequest(req).Send()
 	buf := t.ResponseBody
 	var listRes apiResult
@@ -263,7 +263,7 @@ func (t *AppTest) TestI_RetrieveUserActions_SUCCESS() {
 	t.AssertEqual(err, nil)
 	t.AssertOk()
 	t.AssertContentType("application/json; charset=utf-8")
-  log.Printf("Retrieve action data: ", listRes.Data)
+  log.Printf("Retrieve user goals: ", listRes.Data)
 	if listRes.Data != nil {
 		status := listRes.Data.(map[string]interface{})["list"].([]interface{})[0].(map[string]interface{})["status"].(string)
 		t.AssertEqual(status, "pledged")

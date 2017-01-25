@@ -199,21 +199,21 @@ func (c Users) Show(userID uint) revel.Result {
 	return c.Data(user)
 }
 
-func (c Users) RetrieveActions() revel.Result {
+func (c Users) RetrieveUserGoals() revel.Result {
   userID, _, err := c.GetSession()
 	if err != nil {
 		return c.Error(err)
 	}
 
-	actions, err := ds.RetrieveUserActions(userID)
+	userGoals, err := ds.RetrieveUserGoals(userID)
 	if err != nil {
 		return c.Error(err)
 	}
 
-	return c.Data(actions)
+	return c.Data(userGoals)
 }
 
-func (c Users) UpdateActions() revel.Result {
+func (c Users) UpdateUserGoals() revel.Result {
   userID, _, err := c.GetSession()
   if err != nil {
     return c.Error(err)
@@ -223,13 +223,13 @@ func (c Users) UpdateActions() revel.Result {
   if err != nil {
     return c.Error(err)
   }
-  var update models.ActionUpdate
+  var update models.UserGoalUpdate
   err = json.Unmarshal(body, &update)
   if err != nil {
     return c.Error(err)
   }
 
-  err = ds.UpdateActions(userID, update)
+  err = ds.UpdateUserGoals(userID, update)
   if err != nil {
     return c.Error(err)
   }

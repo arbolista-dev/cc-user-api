@@ -11,8 +11,8 @@ var sess postgresql.Database
 
 var (
 	userSource     					db.Collection
-	leadersSource 					db.Collection
-  actionSource     				db.Collection
+	leaderSource 					db.Collection
+  userGoalSource     		  db.Collection
 	query										db.Result
 )
 
@@ -32,6 +32,6 @@ func init() {
 	}
 
 	userSource = sess.Collection("users")
-	leadersSource = sess.Collection("leaders_public_footprint")
-  actionSource = sess.Collection("actions")
+	leaderSource = sess.Collection("leaders_public_footprint")
+  userGoalSource = sess.Collection("user_goals")
 }

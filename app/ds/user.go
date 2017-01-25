@@ -91,7 +91,7 @@ func Add(user models.User) (login map[string]interface{}, err error) {
 }
 
 func Delete(userID uint) (err error) {
-  err = DeleteUserActions(userID)
+  err = DeleteUserGoals(userID)
 	err = userSource.Find(db.Cond{"user_id": userID}).Delete()
 	return
 }
@@ -247,7 +247,7 @@ func Show(userID uint, auth bool) (profile map[string]interface{}, err error) {
 		return
 	}
 
-  actions, err := RetrieveUserActions(userID)
+  userGoals, err := RetrieveUserGoals(userID)
   if err != nil {
 		return
 	}
@@ -270,7 +270,7 @@ func Show(userID uint, auth bool) (profile map[string]interface{}, err error) {
 		"photo_url": 				user.PhotoUrl,
 		"profile_data":			profileData,
 		"public":						user.Public,
-    "actions":          actions.List,
+    "user_goals":       userGoals.List,
 	}
 	return
 }
@@ -377,15 +377,15 @@ func ListLeaders(limit int, offset int, state string, household_size int) (leade
 
 	if household_size != -1 {
 		if len(state) == 0 {
-			query = leadersSource.Find(db.Cond{"household_size": household_size})
+			query = leaderSource.Find(db.Cond{"household_size": household_size})
 		} else if len(state) > 0 {
-			query = leadersSource.Find(db.Cond{"household_size": household_size}, db.Cond{"state": state})
+			query = leaderSource.Find(db.Cond{"household_size": household_size}, db.Cond{"state": state})
 		}
 	} else {
 		if len(state) == 0 {
-			query = leadersSource.Find()
+			query = leaderSource.Find()
 		} else if len(state) > 0 {
-			query = leadersSource.Find(db.Cond{"state": state})
+			query = leaderSource.Find(db.Cond{"state": state})
 		}
 	}
 
@@ -406,7 +406,7 @@ func ListLeaders(limit int, offset int, state string, household_size int) (leade
 
 func ListLocations() (locations []models.Location, err error) {
 
-	q := leadersSource.Find().Select("city", "state", "county").Group("city", "state", "county")
+	q := leaderSource.Find().Select("city", "state", "county").Group("city", "state", "county")
 	err = q.All(&locations)
 	if err != nil {
 		return

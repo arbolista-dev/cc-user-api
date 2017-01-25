@@ -13,8 +13,8 @@ GET     /user/logoutall                        Users.LogoutAll
 DELETE  /user                                  Users.Delete
 PUT     /user                                  Users.Update
 PUT     /user/answers                          Users.UpdateAnswers
-PUT     /user/actions                          Users.UpdateActions
-GET     /user/actions                          Users.RetrieveActions
+PUT     /user/goals                            Users.UpdateUserGoals
+GET     /user/goals                            Users.RetrieveUserGoals
 PUT     /user/location                         Users.SetLocation
 POST    /user/photo                            Users.SetPhoto
 POST    /user/reset/req                        Users.PassResetRequest
