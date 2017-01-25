@@ -6,6 +6,7 @@ import (
 	"github.com/jmoiron/sqlx/types"
 	"github.com/revel/revel"
 	"time"
+  "strconv"
 )
 
 type User struct {
@@ -31,6 +32,15 @@ type User struct {
 	ProfileData			types.JSONText `json:"profile_data" db:"profile_data"`
 	ResetHash       []byte         `json:"-" db:"reset_hash"`
 	ResetExpiration time.Time      `json:"-" db:"reset_expiration"`
+}
+
+type UserUpdate struct {
+	FirstName       string         `json:"first_name" db:"first_name"`
+	LastName        string         `json:"last_name" db:"last_name"`
+	Email           string         `json:"email" db:"email"`
+	Public					string				 `json:"public"`
+	TotalFootprint	types.JSONText `json:"total_footprint" db:"total_footprint"`
+	ProfileData			types.JSONText `json:"profile_data" db:"profile_data"`
 }
 
 type UserLogin struct {
@@ -180,7 +190,7 @@ func (u *User) UnmarshalDB() {
 	u.ValidJTIs = s
 }
 
-func (u *User) Update(n User) {
+func (u *User) Update(n UserUpdate) {
 	if n.FirstName != "" {
 		u.FirstName = n.FirstName
 	}
@@ -190,8 +200,13 @@ func (u *User) Update(n User) {
 	if n.Email != "" {
 		u.Email = n.Email
 	}
-	if n.Public || !n.Public {
-		u.Public = n.Public
+  // updating Public with string value because when using bool a non-given public parameter sets it to false
+	if n.Public != "" {
+    b, err := strconv.ParseBool(n.Public)
+    if err != nil {
+      return
+    }
+		u.Public = b
 	}
   if n.TotalFootprint != nil {
     u.TotalFootprint = n.TotalFootprint

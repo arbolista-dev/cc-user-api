@@ -102,6 +102,10 @@ func UpdateActions(userID uint, update models.ActionUpdate) (err error) {
         return
     }
   }
-
 	return
+}
+
+func DeleteUserActions(userID uint) (err error) {
+  err = actionSource.Find(db.Cond{"user_id": userID}).Delete()
+  return
 }

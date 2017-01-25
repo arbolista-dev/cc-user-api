@@ -370,7 +370,7 @@ func (c Users) Update() revel.Result {
 	if err != nil {
 		return c.Error(err)
 	}
-	var user models.User
+	var user models.UserUpdate
 	err = json.Unmarshal(body, &user)
 	if err != nil {
 		return c.Error(err)

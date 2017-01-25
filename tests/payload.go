@@ -44,6 +44,11 @@ var answers_update = `{"answers":{"result_food_total": "5", "result_housing_tota
 
 var location_set = `{"city":"Brooklyn","county":"Kings","state":"New York","country":"us"}`
 
+var actions_update = `{
+  "key":"more_efficient_vehicle",
+  "status":"pledged",
+  "details":{"tons_saved":2.27,"dollars_saved":711,"upfront_cost":2000}}`
+
 var profile = `{
   "first_name": "Juanito",
   "last_name" : "Perezin",

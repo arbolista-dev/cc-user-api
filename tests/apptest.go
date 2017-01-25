@@ -174,7 +174,16 @@ func (t *AppTest) TestE3_SetLocation_SUCCESS() {
 	testSuccess(t, true, "")
 }
 
-// func (t *AppTest) TestE4_SetPhoto_SUCCESS() {
+func (t *AppTest) TestE4_UpdateActions_SUCCESS() {
+	req := myVERB("PUT", "/user/actions", "application/json; charset=utf-8", strings.NewReader(actions_update), token, t)
+	t.NewTestRequest(req).Send()
+	t.AssertOk()
+	t.AssertContentType("application/json; charset=utf-8")
+	log.Println(string(t.ResponseBody))
+	testSuccess(t, true, "")
+}
+
+// func (t *AppTest) TestE5_SetPhoto_SUCCESS() {
 // 	filePath, _ := os.Getwd()
 // 	filePath += "/tests/profile-photo.jpg"
 // 	log.Println("filepath", filePath)
@@ -245,14 +254,14 @@ func (t *AppTest) TestH_UserLogin_SUCCESS() {
 	t.TestC_Login_SUCCESS()
 }
 
-func (t *AppTest) TestI_Delete_SUCCESS() {
-	req := myVERB("DELETE", "/user", "", nil, token, t)
-	t.NewTestRequest(req).Send()
-	t.AssertOk()
-	t.AssertContentType("application/json; charset=utf-8")
-	log.Println(string(t.ResponseBody))
-	testSuccess(t, true, "")
-}
+// func (t *AppTest) TestI_Delete_SUCCESS() {
+// 	req := myVERB("DELETE", "/user", "", nil, token, t)
+// 	t.NewTestRequest(req).Send()
+// 	t.AssertOk()
+// 	t.AssertContentType("application/json; charset=utf-8")
+// 	log.Println(string(t.ResponseBody))
+// 	testSuccess(t, true, "")
+// }
 
 func (t *AppTest) Before() {
 	log.Println("+++++++++++++++++++++++++++++++++++++++++++++++++")

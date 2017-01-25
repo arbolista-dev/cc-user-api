@@ -91,6 +91,7 @@ func Add(user models.User) (login map[string]interface{}, err error) {
 }
 
 func Delete(userID uint) (err error) {
+  err = DeleteUserActions(userID)
 	err = userSource.Find(db.Cond{"user_id": userID}).Delete()
 	return
 }
@@ -295,7 +296,7 @@ func SetPhoto(userID uint, photo_url string) (photo_set map[string]interface{}, 
 	return
 }
 
-func Update(userID uint, userNew models.User) (err error) {
+func Update(userID uint, userNew models.UserUpdate) (err error) {
 	var user models.User
 	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
 	if err != nil {
