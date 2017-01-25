@@ -9,9 +9,9 @@ CREATE TABLE IF NOT EXISTS "actions" (
     "user_id"         INTEGER REFERENCES users(user_id),
     "status"          status_options,
     "created_at"      TIMESTAMP,
-    "tons_saved"      REAL,
-    "dollars_saved"   REAL,
-    "upfront_cost"    REAL
+    "tons_saved"      NUMERIC,
+    "dollars_saved"   NUMERIC,
+    "upfront_cost"    NUMERIC
 );
 
 -- +goose Down

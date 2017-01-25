@@ -199,6 +199,20 @@ func (c Users) Show(userID uint) revel.Result {
 	return c.Data(user)
 }
 
+func (c Users) RetrieveActions() revel.Result {
+  userID, _, err := c.GetSession()
+	if err != nil {
+		return c.Error(err)
+	}
+
+	actions, err := ds.RetrieveUserActions(userID)
+	if err != nil {
+		return c.Error(err)
+	}
+
+	return c.Data(actions)
+}
+
 func (c Users) UpdateActions() revel.Result {
   userID, _, err := c.GetSession()
   if err != nil {

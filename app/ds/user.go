@@ -247,6 +247,11 @@ func Show(userID uint, auth bool) (profile map[string]interface{}, err error) {
 		return
 	}
 
+  actions, err := RetrieveUserActions(userID)
+  if err != nil {
+		return
+	}
+
 	var profileData models.ProfileData
 	err = json.Unmarshal(user.ProfileData, &profileData)
 	if err != nil {
@@ -265,6 +270,7 @@ func Show(userID uint, auth bool) (profile map[string]interface{}, err error) {
 		"photo_url": 				user.PhotoUrl,
 		"profile_data":			profileData,
 		"public":						user.Public,
+    "actions":          actions.List,
 	}
 	return
 }

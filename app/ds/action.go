@@ -105,6 +105,21 @@ func UpdateActions(userID uint, update models.ActionUpdate) (err error) {
 	return
 }
 
+func RetrieveUserActions(userID uint) (actions models.ActionsList, err error) {
+  query = actionSource.Find(db.Cond{"user_id": userID})
+  count, err := query.Count()
+  if err != nil {
+    return
+  }
+  actions.TotalCount = count
+
+  err = query.All(&actions.List)
+  if err != nil {
+    return
+  }
+  return
+}
+
 func DeleteUserActions(userID uint) (err error) {
   err = actionSource.Find(db.Cond{"user_id": userID}).Delete()
   return
