@@ -82,12 +82,12 @@ type PaginatedLeaders struct {
 }
 
 type ProfileData struct {
-    Facebook string `json:"facebook"`
-    Twitter string `json:"twitter"`
-    Instagram string `json:"instagram"`
-		LinkedIn string `json:"linkedin"`
-		Medium string `json:"medium"`
-		Intro string `json:"intro"`
+  Facebook  string `json:"facebook"`
+  Twitter   string `json:"twitter"`
+  Instagram string `json:"instagram"`
+	LinkedIn  string `json:"linkedin"`
+	Medium    string `json:"medium"`
+	Intro     string `json:"intro"`
 }
 
 type Leader struct {
@@ -193,6 +193,9 @@ func (u *User) Update(n User) {
 	if n.Public || !n.Public {
 		u.Public = n.Public
 	}
+  if n.TotalFootprint != nil {
+    u.TotalFootprint = n.TotalFootprint
+  }
 	if n.ProfileData != nil {
 		u.ProfileData = n.ProfileData
 	}

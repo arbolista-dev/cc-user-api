@@ -212,8 +212,8 @@ func (t *AppTest) TestF1_ListLeaders_SUCCESS() {
 	testSuccess(t, true, "")
 }
 
-func (t *AppTest) TestF2_ShowUser_SUCCESS() {
-	userPath := "/profile/" + userID
+func (t *AppTest) TestF2_ShowUserProfile_SUCCESS() {
+	userPath := "/user/" + userID + "/profile"
 	req := myVERB("GET", userPath, "", nil, "", t)
 	t.NewTestRequest(req).Send()
 	log.Println(string(t.ResponseBody))
@@ -222,8 +222,8 @@ func (t *AppTest) TestF2_ShowUser_SUCCESS() {
 	testSuccess(t, true, profile)
 }
 
-func (t *AppTest) TestF3_ShowUser_ERROR_NonExistent() {
-	userPath := "/profile/999999999"
+func (t *AppTest) TestF3_ShowUserProfile_ERROR_NonExistent() {
+	userPath := "/user/999999999/profile"
 	req := myVERB("GET", userPath, "", nil, "", t)
 	t.NewTestRequest(req).Send()
 	t.AssertOk()

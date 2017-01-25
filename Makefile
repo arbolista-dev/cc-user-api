@@ -33,7 +33,7 @@ database-shell:
 
 # Run DB migrations
 migrate-db:
-	docker exec -it user_api bash -c 'cd go/src/github.com/arbolista-dev/cc-user-api; goose -env  $(CC_ENV) up'
+	docker exec -it user_api bash -c 'cd go/src/github.com/arbolista-dev/cc-user-api; goose -env $(CC_ENV) up'
 
 # Update API with latest changes (CC_ENV=dev only)
 update-api:

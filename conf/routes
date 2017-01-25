@@ -18,7 +18,7 @@ POST    /user/photo                            Users.SetPhoto
 POST    /user/reset/req                        Users.PassResetRequest
 POST    /user/reset                            Users.PassResetConfirm
 GET     /user/leaders                          Users.ListLeaders
-GET     /profile/:userID                       Users.Show
+GET     /user/:userID/profile                  Users.Show
 GET     /user/locations                        Users.ListLocations
 
 GET     /page/passreset                        Page.PasswordReset
