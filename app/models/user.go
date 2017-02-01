@@ -6,6 +6,7 @@ import (
 	"github.com/jmoiron/sqlx/types"
 	"github.com/revel/revel"
 	"time"
+  "strconv"
 )
 
 type User struct {
@@ -27,8 +28,19 @@ type User struct {
 	Country					string 				 `json:"country" db:"country"`
 	HouseholdSize		int 				 	 `json:"household_size" db:"household_size"`
 	TotalFootprint	types.JSONText `json:"total_footprint" db:"total_footprint"`
+	PhotoUrl				string				 `json:"photo_url" db:"photo_url"`
+	ProfileData			types.JSONText `json:"profile_data" db:"profile_data"`
 	ResetHash       []byte         `json:"-" db:"reset_hash"`
 	ResetExpiration time.Time      `json:"-" db:"reset_expiration"`
+}
+
+type UserUpdate struct {
+	FirstName       string         `json:"first_name" db:"first_name"`
+	LastName        string         `json:"last_name" db:"last_name"`
+	Email           string         `json:"email" db:"email"`
+	Public					string				 `json:"public"`
+	TotalFootprint	types.JSONText `json:"total_footprint" db:"total_footprint"`
+	ProfileData			types.JSONText `json:"profile_data" db:"profile_data"`
 }
 
 type UserLogin struct {
@@ -79,14 +91,27 @@ type PaginatedLeaders struct {
 	List					[]Leader	`json:"list"`
 }
 
+type ProfileData struct {
+  Facebook  string `json:"facebook"`
+  Twitter   string `json:"twitter"`
+  Instagram string `json:"instagram"`
+	LinkedIn  string `json:"linkedin"`
+	Medium    string `json:"medium"`
+	Intro     string `json:"intro"`
+}
+
 type Leader struct {
+	UserID          	uint           `json:"user_id" db:"user_id"`
 	FirstName       	string         `json:"first_name" db:"first_name"`
 	LastName        	string         `json:"last_name" db:"last_name"`
 	City							string 				 `json:"city" db:"city"`
 	State							string 				 `json:"state" db:"state"`
 	County						string 				 `json:"county" db:"county"`
 	HouseholdSize			int 				 	 `json:"household_size" db:"household_size"`
-	TotalFootprint	types.JSONText 	 `json:"total_footprint" db:"total_footprint"`
+	TotalFootprint		types.JSONText `json:"total_footprint" db:"total_footprint"`
+	PhotoUrl					string				 `json:"photo_url" db:"photo_url"`
+	ProfileData				types.JSONText `json:"profile_data" db:"profile_data"`
+	Public						bool				 	 `json:"public" db:"public"`
 }
 
 func (user *User) Validate(v *revel.Validation) {
@@ -153,6 +178,9 @@ func (u *User) MarshalDB() {
 	if u.TotalFootprint == nil {
 		u.TotalFootprint = types.JSONText("{}")
 	}
+	if u.ProfileData == nil {
+		u.ProfileData = types.JSONText("{}")
+	}
 }
 
 func (u *User) UnmarshalDB() {
@@ -162,7 +190,7 @@ func (u *User) UnmarshalDB() {
 	u.ValidJTIs = s
 }
 
-func (u *User) Update(n User) {
+func (u *User) Update(n UserUpdate) {
 	if n.FirstName != "" {
 		u.FirstName = n.FirstName
 	}
@@ -171,5 +199,19 @@ func (u *User) Update(n User) {
 	}
 	if n.Email != "" {
 		u.Email = n.Email
+	}
+  // updating Public with string value because when using bool a non-given public parameter sets it to false
+	if n.Public != "" {
+    b, err := strconv.ParseBool(n.Public)
+    if err != nil {
+      return
+    }
+		u.Public = b
+	}
+  if n.TotalFootprint != nil {
+    u.TotalFootprint = n.TotalFootprint
+  }
+	if n.ProfileData != nil {
+		u.ProfileData = n.ProfileData
 	}
 }

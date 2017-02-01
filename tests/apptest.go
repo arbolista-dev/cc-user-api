@@ -4,12 +4,17 @@ import (
 	"encoding/json"
 	"github.com/revel/revel/testing"
 	"io"
+	"os"
 	"log"
 	"net/http"
+	"net/textproto"
+	"mime/multipart"
+	"bytes"
 	"strings"
+	"strconv"
 )
 
-var token string
+var token, userID string
 
 type AppTest struct {
 	testing.TestSuite
@@ -40,6 +45,45 @@ func myVERB(verb, path string, contentType string, reader io.Reader, token strin
 		panic(err)
 	}
 	req.Header.Set("Authorization", token)
+	return req
+}
+
+func fileUploadRequest(path string, filepath string, token string, t *AppTest) *http.Request {
+	var err error
+	var req *http.Request
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	file, err := os.Open(filepath)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	log.Println("file", file)
+
+	h := textproto.MIMEHeader{}
+	h.Set("Content-Type", "multipart/form-data")
+
+	part, err := writer.CreatePart(h)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = io.Copy(part, file)
+	if err != nil {
+		panic(err)
+	}
+
+	err = writer.Close()
+	t.AssertEqual(nil, err)
+
+	req, err = http.NewRequest("POST", t.BaseUrl()+path, body)
+	req.Header.Set("Authorization", token)
+	if err != nil {
+		panic(err)
+	}
 	return req
 }
 
@@ -130,6 +174,26 @@ func (t *AppTest) TestE3_SetLocation_SUCCESS() {
 	testSuccess(t, true, "")
 }
 
+func (t *AppTest) TestE4_UpdateUserGoals_SUCCESS() {
+	req := myVERB("PUT", "/user/goals", "application/json; charset=utf-8", strings.NewReader(user_goals_update), token, t)
+	t.NewTestRequest(req).Send()
+	t.AssertOk()
+	t.AssertContentType("application/json; charset=utf-8")
+	log.Println(string(t.ResponseBody))
+	testSuccess(t, true, "")
+}
+
+// func (t *AppTest) TestE5_SetPhoto_SUCCESS() {
+// 	filePath, _ := os.Getwd()
+// 	filePath += "/tests/profile-photo.jpg"
+// 	log.Println("filepath", filePath)
+// 	req := fileUploadRequest("/user/photo", filePath, token, t)
+// 	t.NewTestRequest(req).Send()
+// 	t.AssertOk()
+// 	log.Println(string(t.ResponseBody))
+// 	testSuccess(t, true, "")
+// }
+
 func (t *AppTest) TestE_UserLogout_SUCCESS() {
 	req := myVERB("GET", "/user/logout", "", nil, token, t)
 	t.NewTestRequest(req).Send()
@@ -139,7 +203,45 @@ func (t *AppTest) TestE_UserLogout_SUCCESS() {
 	testSuccess(t, true, "")
 }
 
-func (t *AppTest) TestF_UserLogout_ERROR_NoSession() {
+func (t *AppTest) TestF1_ListLeaders_SUCCESS() {
+	req := myVERB("GET", "/user/leaders", "", nil, "", t)
+	t.NewTestRequest(req).Send()
+	buf := t.ResponseBody
+	var listRes apiResult
+	err := json.Unmarshal(buf, &listRes)
+	t.AssertEqual(err, nil)
+	t.AssertOk()
+	t.AssertContentType("application/json; charset=utf-8")
+	if listRes.Data != nil {
+		_userID := int(listRes.Data.(map[string]interface{})["list"].([]interface{})[0].(map[string]interface{})["user_id"].(float64))
+		userID = strconv.Itoa(_userID)
+		log.Println(string(t.ResponseBody))
+		log.Printf("Setting userID for retrieving profile to: ", userID)
+	}
+	testSuccess(t, true, "")
+}
+
+func (t *AppTest) TestF2_ShowUserProfile_SUCCESS() {
+	userPath := "/user/" + userID + "/profile"
+	req := myVERB("GET", userPath, "", nil, "", t)
+	t.NewTestRequest(req).Send()
+	log.Println(string(t.ResponseBody))
+	t.AssertOk()
+	t.AssertContentType("application/json; charset=utf-8")
+	testSuccess(t, true, profile)
+}
+
+func (t *AppTest) TestF3_ShowUserProfile_ERROR_NonExistent() {
+	userPath := "/user/999999999/profile"
+	req := myVERB("GET", userPath, "", nil, "", t)
+	t.NewTestRequest(req).Send()
+	t.AssertOk()
+	t.AssertContentType("application/json; charset=utf-8")
+	log.Println(string(t.ResponseBody))
+	testSuccess(t, false, `{"profile": "non-existent"}`)
+}
+
+func (t *AppTest) TestG_UserLogout_ERROR_NoSession() {
 	req := myVERB("GET", "/user/logout", "", nil, token, t)
 	t.NewTestRequest(req).Send()
 	t.AssertOk()
@@ -148,11 +250,28 @@ func (t *AppTest) TestF_UserLogout_ERROR_NoSession() {
 	testSuccess(t, false, `{"session": "non-existent"}`)
 }
 
-func (t *AppTest) TestG_UserLogin_SUCCESS() {
+func (t *AppTest) TestH_UserLogin_SUCCESS() {
 	t.TestC_Login_SUCCESS()
 }
 
-func (t *AppTest) TestH_Delete_SUCCESS() {
+func (t *AppTest) TestI_RetrieveUserGoals_SUCCESS() {
+	req := myVERB("GET", "/user/goals", "", nil, token, t)
+	t.NewTestRequest(req).Send()
+	buf := t.ResponseBody
+	var listRes apiResult
+	err := json.Unmarshal(buf, &listRes)
+	t.AssertEqual(err, nil)
+	t.AssertOk()
+	t.AssertContentType("application/json; charset=utf-8")
+  log.Printf("Retrieve user goals: ", listRes.Data)
+	if listRes.Data != nil {
+		status := listRes.Data.(map[string]interface{})["list"].([]interface{})[0].(map[string]interface{})["status"].(string)
+		t.AssertEqual(status, "pledged")
+	}
+	testSuccess(t, true, "")
+}
+
+func (t *AppTest) TestJ_Delete_SUCCESS() {
 	req := myVERB("DELETE", "/user", "", nil, token, t)
 	t.NewTestRequest(req).Send()
 	t.AssertOk()
