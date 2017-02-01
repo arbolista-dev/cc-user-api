@@ -11,20 +11,18 @@ RUN curl https://storage.googleapis.com/golang/go1.6.linux-amd64.tar.gz | tar -x
 
 #gopath
 RUN mkdir go
-
 ENV GOPATH /go
-
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 
 RUN go get github.com/revel/cmd/revel
+RUN go get bitbucket.org/liamstask/goose/cmd/goose
+RUN go get github.com/aws/aws-sdk-go
 
-RUN mkdir /go/src/github.com/arbolista-dev &&\
-    mkdir /go/src/github.com/arbolista-dev/cc-user-api
+RUN mkdir -p /go/src/github.com/arbolista-dev/cc-user-api
 
 COPY . /go/src/github.com/arbolista-dev/cc-user-api
+COPY docker-entrypoint.sh /
 
-ARG USER_API_PORT=8080
+RUN chmod u+x docker-entrypoint.sh
 
-CMD ["revel", "run", "github.com/arbolista-dev/cc-user-api"]
-
-EXPOSE $USER_API_PORT
+ENTRYPOINT ./docker-entrypoint.sh $CC_ENV

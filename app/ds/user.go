@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"github.com/arbolista-dev/cc-user-api/app/models"
+	"github.com/arbolista-dev/cc-user-api/app/utils"
 	"golang.org/x/crypto/bcrypt"
 	"os"
 	"time"
@@ -81,6 +82,7 @@ func Add(user models.User) (login map[string]interface{}, err error) {
 	}
 
 	login = map[string]interface{}{
+		"user_id": userID,
 		"name":    user.FirstName,
 		"token":   sToken,
 		"answers": user.Answers.String(),
@@ -89,6 +91,7 @@ func Add(user models.User) (login map[string]interface{}, err error) {
 }
 
 func Delete(userID uint) (err error) {
+  err = DeleteUserGoals(userID)
 	err = userSource.Find(db.Cond{"user_id": userID}).Delete()
 	return
 }
@@ -153,6 +156,7 @@ func LoginFacebook(logRequest models.UserFacebook) (login map[string]interface{}
 	}
 
 	login = map[string]interface{}{
+		"user_id": user.UserID,
 		"name":    user.FirstName,
 		"token":   sToken,
 		"answers": user.Answers.String(),
@@ -192,6 +196,7 @@ func Login(logRequest models.UserLogin) (login map[string]interface{}, err error
 	}
 
 	login = map[string]interface{}{
+		"user_id": user.UserID,
 		"name":    user.FirstName,
 		"token":   sToken,
 		"answers": user.Answers.String(),
@@ -229,6 +234,47 @@ func LogoutAll(userID uint) (err error) {
 	return
 }
 
+func Show(userID uint, auth bool) (profile map[string]interface{}, err error) {
+	var user models.Leader
+	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
+	if err != nil {
+		err = errors.New(`{"profile": "non-existent"}`)
+		return
+	}
+
+	if user.Public == false && auth == false {
+		err = errors.New(`{"profile": "not-public"}`)
+		return
+	}
+
+  userGoals, err := RetrieveUserGoals(userID)
+  if err != nil {
+		return
+	}
+
+	var profileData models.ProfileData
+	err = json.Unmarshal(user.ProfileData, &profileData)
+	if err != nil {
+		return
+	}
+
+	profile = map[string]interface{}{
+		"user_id":    			user.UserID,
+		"first_name": 			user.FirstName,
+		"last_name":  			user.LastName,
+		"city":  						user.City,
+		"state":  					user.State,
+		"county":  					user.County,
+		"household_size": 	user.HouseholdSize,
+		"total_footprint": 	user.TotalFootprint.String(),
+		"photo_url": 				user.PhotoUrl,
+		"profile_data":			profileData,
+		"public":						user.Public,
+    "user_goals":       userGoals.List,
+	}
+	return
+}
+
 func SetLocation(userID uint, location models.Location) (err error) {
 	var user models.User
 	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
@@ -242,7 +288,21 @@ func SetLocation(userID uint, location models.Location) (err error) {
 	return
 }
 
-func Update(userID uint, userNew models.User) (err error) {
+func SetPhoto(userID uint, photo_url string) (photo_set map[string]interface{}, err error) {
+	var user models.User
+	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
+	if err != nil {
+		return
+	}
+	user.PhotoUrl = photo_url
+	err = userSource.Find(db.Cond{"user_id": userID}).Update(user)
+	photo_set = map[string]interface{}{
+		"photo_url": photo_url,
+	}
+	return
+}
+
+func Update(userID uint, userNew models.UserUpdate) (err error) {
 	var user models.User
 	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
 	if err != nil {
@@ -315,17 +375,17 @@ func PassResetConfirm(userID uint, token, password string) (err error) {
 
 func ListLeaders(limit int, offset int, state string, household_size int) (leaders models.PaginatedLeaders, err error) {
 
-	if household_size != 0 {
+	if household_size != -1 {
 		if len(state) == 0 {
-			query = leadersSource.Find(db.Cond{"household_size": household_size})
+			query = leaderSource.Find(db.Cond{"household_size": household_size})
 		} else if len(state) > 0 {
-			query = leadersSource.Find(db.Cond{"household_size": household_size}, db.Cond{"state": state})
+			query = leaderSource.Find(db.Cond{"household_size": household_size}, db.Cond{"state": state})
 		}
 	} else {
 		if len(state) == 0 {
-			query = leadersSource.Find()
+			query = leaderSource.Find()
 		} else if len(state) > 0 {
-			query = leadersSource.Find(db.Cond{"state": state})
+			query = leaderSource.Find(db.Cond{"state": state})
 		}
 	}
 
@@ -346,7 +406,7 @@ func ListLeaders(limit int, offset int, state string, household_size int) (leade
 
 func ListLocations() (locations []models.Location, err error) {
 
-	q := leadersSource.Find().Select("city", "state", "county").Group("city", "state", "county")
+	q := leaderSource.Find().Select("city", "state", "county").Group("city", "state", "county")
 	err = q.All(&locations)
 	if err != nil {
 		return
@@ -365,7 +425,7 @@ func hashPassword(user *models.User) {
 }
 
 func hashReset(user *models.User) (token string) {
-	token = randString(10)
+	token = utils.RandString(10)
 	var err error
 	user.ResetHash, err = bcrypt.GenerateFromPassword([]byte(token), bcrypt.DefaultCost)
 	if err != nil {
