@@ -13,10 +13,14 @@ GET     /user/logoutall                        Users.LogoutAll
 DELETE  /user                                  Users.Delete
 PUT     /user                                  Users.Update
 PUT     /user/answers                          Users.UpdateAnswers
+PUT     /user/goals                            Users.UpdateUserGoals
+GET     /user/goals                            Users.RetrieveUserGoals
 PUT     /user/location                         Users.SetLocation
+POST    /user/photo                            Users.SetPhoto
 POST    /user/reset/req                        Users.PassResetRequest
 POST    /user/reset                            Users.PassResetConfirm
 GET     /user/leaders                          Users.ListLeaders
+GET     /user/:userID/profile                  Users.Show
 GET     /user/locations                        Users.ListLocations
 GET 	  /user/activate						             Users.NeedActivate
 POST 	  /user/activate						             Users.SendActivate

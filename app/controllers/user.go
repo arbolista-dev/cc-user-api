@@ -1,6 +1,10 @@
 package controllers
 
 import (
+	"bytes"
+	"image"
+	_ "image/jpeg"
+	_ "image/png"
 	"encoding/json"
 	"github.com/arbolista-dev/cc-user-api/app/ds"
 	"github.com/arbolista-dev/cc-user-api/app/models"
@@ -11,6 +15,12 @@ import (
 	"strconv"
 	"math"
 	"strings"
+)
+
+const (
+	_      = iota
+	KB int = 1 << (10 * iota)
+	MB
 )
 
 type Users struct {
@@ -81,7 +91,7 @@ func (c Users) LogoutAll() revel.Result {
 
 func (c Users) ListLeaders() revel.Result {
 
-	limit, offset, state, household_size := 10, 0, "", 0
+	limit, offset, state, household_size := 10, 0, "", -1
 
 	if len(c.Params.Values) != 0 {
 		if value, ok := c.Params.Values["limit"]; ok {
@@ -174,6 +184,61 @@ func (c Users) Delete() revel.Result {
 	return c.OK()
 }
 
+func (c Users) Show(userID uint) revel.Result {
+	auth := true
+	uID, _, err := c.GetSession()
+	if err != nil {
+		auth = false
+	}
+	if uID != userID {
+		auth = false
+	}
+
+	user, err := ds.Show(userID, auth)
+	if err != nil {
+		return c.Error(err)
+	}
+
+	return c.Data(user)
+}
+
+func (c Users) RetrieveUserGoals() revel.Result {
+  userID, _, err := c.GetSession()
+	if err != nil {
+		return c.Error(err)
+	}
+
+	userGoals, err := ds.RetrieveUserGoals(userID)
+	if err != nil {
+		return c.Error(err)
+	}
+
+	return c.Data(userGoals)
+}
+
+func (c Users) UpdateUserGoals() revel.Result {
+  userID, _, err := c.GetSession()
+  if err != nil {
+    return c.Error(err)
+  }
+
+  body, err := ioutil.ReadAll(c.Request.Body)
+  if err != nil {
+    return c.Error(err)
+  }
+  var update models.UserGoalUpdate
+  err = json.Unmarshal(body, &update)
+  if err != nil {
+    return c.Error(err)
+  }
+
+  err = ds.UpdateUserGoals(userID, update)
+  if err != nil {
+    return c.Error(err)
+  }
+  return c.OK()
+}
+
 func (c Users) UpdateAnswers() revel.Result {
 	userID, _, err := c.GetSession()
 	if err != nil {
@@ -199,6 +264,8 @@ func (c Users) UpdateAnswers() revel.Result {
 	footprintsMap := map[string]interface{}{
 		"result_food_total": 0,
 		"result_housing_total": 0,
+		"result_services_total": 0,
+		"result_goods_total": 0,
 		"result_shopping_total": 0,
 		"result_transport_total": 0,
 		"result_grand_total": 0,
@@ -276,6 +343,39 @@ func (c Users) SetLocation() revel.Result {
 	return c.OK()
 }
 
+func (c Users) SetPhoto(file []byte) revel.Result {
+	userID, _, err := c.GetSession()
+	if err != nil {
+		return c.Error(err)
+	}
+
+	c.Validation.Required(file)
+	c.Validation.MinSize(file, 2*KB)
+	c.Validation.MaxSize(file, 4*MB)
+
+
+	conf, format, err := image.DecodeConfig(bytes.NewReader(file))
+	if err != nil {
+		return c.Error(err)
+	}
+
+	c.Validation.Required(err == nil).Key("file")
+	c.Validation.Required(format == "jpeg" || format == "png" || format == "gif").Key("file")
+	c.Validation.Required(conf.Height >= 150 && conf.Width >= 150).Key("file")
+
+	photo_url, err := services.UploadFile(file, format)
+	if err != nil {
+		return c.Error(err)
+	}
+
+	photo_set, err := ds.SetPhoto(userID, photo_url)
+	if err != nil {
+		return c.Error(err)
+	}
+
+	return c.Data(photo_set)
+}
+
 func (c Users) Update() revel.Result {
 	userID, _, err := c.GetSession()
 	if err != nil {
@@ -286,7 +386,7 @@ func (c Users) Update() revel.Result {
 	if err != nil {
 		return c.Error(err)
 	}
-	var user models.User
+	var user models.UserUpdate
 	err = json.Unmarshal(body, &user)
 	if err != nil {
 		return c.Error(err)

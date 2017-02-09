@@ -9,6 +9,12 @@
 			"revisionTime": "2014-09-21T22:56:20Z"
 		},
 		{
+			"checksumSHA1": "4pgYZWTGSHhY5zzL2yvbh+XfFgg=",
+			"path": "github.com/aws/aws-sdk-go",
+			"revision": "2b30c0d3795409731d69596ac9573b97a41af51e",
+			"revisionTime": "2016-12-05T07:03:01Z"
+		},
+		{
 			"checksumSHA1": "FwxTDf3E9qpIJlxec5aT8GjRX+o=",
 			"path": "github.com/dgrijalva/jwt-go",
 			"revision": "c04502f106d7c5b3fae17c5da49a1bbdd3006b3c",
