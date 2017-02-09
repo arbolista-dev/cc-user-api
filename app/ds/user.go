@@ -47,7 +47,7 @@ func GetSession(token string) (userID uint, jti string, err error) {
 	return
 }
 
-func Add(user models.User) (login map[string]interface{}, userID uint, err error) {
+func Add(user models.User) (login map[string]interface{}, err error) {
 	hashPassword(&user)
 
 	user.MarshalDB()
@@ -62,7 +62,7 @@ func Add(user models.User) (login map[string]interface{}, userID uint, err error
 		}
 		return
 	}
-	userID = uint(temp.(int64))
+	userID := uint(temp.(int64))
 
 	token, err := newToken(userID)
 	if err != nil {
@@ -122,7 +122,7 @@ func LoginFacebook(logRequest models.UserFacebook) (login map[string]interface{}
 	if err != nil {
 		err = errors.New(`{"facebook":"token-invalid"}`);
 	}
-	if err!=nil {
+	if err != nil {
 		return
 	}
 	err = userSource.Find("facebook_id", logRequest.FacebookID).One(&user)
@@ -133,7 +133,7 @@ func LoginFacebook(logRequest models.UserFacebook) (login map[string]interface{}
 		user.FirstName = facebookData.FirstName;
 		user.LastName = facebookData.LastName;
 		user.Answers = logRequest.Answers;
-		login, _, err = Add(user);
+		login, err = Add(user);
 		return
 	}
 
@@ -326,45 +326,45 @@ func UpdateAnswers(userID uint, userAnswers models.AnswersUpdate) (err error) {
 	return
 }
 
-func ConfirmRequest(email string) (token string, err error) {
-	var user models.User
-	err = userSource.Find(db.Cond{"email": email}).One(&user)
-	if err != nil {
-		return
-	}
-	token = hashConfirm(&user)
-	err = userSource.Find(db.Cond{"user_id": user.UserID}).Update(user)
-	return
-}
-
-func ConfirmEmail(userID uint, token string) (err error) {
-	var user models.User
-	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
-	if err != nil {
-		return
-	}
-	user.UnmarshalDB()
-	if user.ResetExpiration.After(time.Now()) {
-		user.ResetHash = []byte{}
-		user.ResetExpiration = time.Time{}
-		err = errors.New(`The link has expired`)
-		return
-	}
-
-	err = bcrypt.CompareHashAndPassword(user.EmailHash, []byte(token))
-	if err != nil {
-		err = errors.New(`The link is corrupt`)
-		return err
-	}
-	user.EmailHash = []byte{}
-	user.EmailExpiration = time.Time{}
-	user.MarshalDB()
-	err = userSource.Find(db.Cond{"user_id": user.UserID}).Update(user)
-	if err != nil {
-		return
-	}
-	return
-}
+// func ConfirmRequest(email string) (token string, err error) {
+// 	var user models.User
+// 	err = userSource.Find(db.Cond{"email": email}).One(&user)
+// 	if err != nil {
+// 		return
+// 	}
+// 	token = hashConfirm(&user)
+// 	err = userSource.Find(db.Cond{"user_id": user.UserID}).Update(user)
+// 	return
+// }
+//
+// func ConfirmEmail(userID uint, token string) (err error) {
+// 	var user models.User
+// 	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
+// 	if err != nil {
+// 		return
+// 	}
+// 	user.UnmarshalDB()
+// 	if user.ResetExpiration.After(time.Now()) {
+// 		user.ResetHash = []byte{}
+// 		user.ResetExpiration = time.Time{}
+// 		err = errors.New(`The link has expired`)
+// 		return
+// 	}
+//
+// 	err = bcrypt.CompareHashAndPassword(user.EmailHash, []byte(token))
+// 	if err != nil {
+// 		err = errors.New(`The link is corrupt`)
+// 		return err
+// 	}
+// 	user.EmailHash = []byte{}
+// 	user.EmailExpiration = time.Time{}
+// 	user.MarshalDB()
+// 	err = userSource.Find(db.Cond{"user_id": user.UserID}).Update(user)
+// 	if err != nil {
+// 		return
+// 	}
+// 	return
+// }
 
 func PassResetRequest(email string) (userID uint, token string, name string, err error) {
 	var user models.User
@@ -456,26 +456,27 @@ func ListLocations() (locations []models.Location, err error) {
 	}
 	return
 }
-func NeedActivate(userID uint) (activate models.NeedActivate, err error) {
-	var user models.User
-	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
-	if err != nil {
-		return
-	}
 
-	if user.EmailHash == nil || len(user.EmailHash) == 0 {
-		activate = models.NeedActivate{
-			Need: false,
-		}
-	}else {
-		activate = models.NeedActivate{
-			Need: true,
-			Name: user.FirstName,
-			Email: user.Email,
-		}
-	}
-	return
-}
+// func NeedActivate(userID uint) (activate models.NeedActivate, err error) {
+// 	var user models.User
+// 	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
+// 	if err != nil {
+// 		return
+// 	}
+//
+// 	if user.EmailHash == nil || len(user.EmailHash) == 0 {
+// 		activate = models.NeedActivate{
+// 			Need: false,
+// 		}
+// 	}else {
+// 		activate = models.NeedActivate{
+// 			Need: true,
+// 			Name: user.FirstName,
+// 			Email: user.Email,
+// 		}
+// 	}
+// 	return
+// }
 
 func hashPassword(user *models.User) {
 	b := make([]byte, 10)
@@ -487,16 +488,16 @@ func hashPassword(user *models.User) {
 	user.Salt = b
 }
 
-func hashConfirm(user *models.User) (token string) {
-	token = utils.RandString(10)
-	var err error
-	user.EmailHash, err = bcrypt.GenerateFromPassword([]byte(token), bcrypt.DefaultCost)
-	if err != nil {
-		panic(err)
-	}
-	user.EmailExpiration = time.Now().Add(time.Hour * 5)
-	return
-}
+// func hashConfirm(user *models.User) (token string) {
+// 	token = utils.RandString(10)
+// 	var err error
+// 	user.EmailHash, err = bcrypt.GenerateFromPassword([]byte(token), bcrypt.DefaultCost)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	user.EmailExpiration = time.Now().Add(time.Hour * 5)
+// 	return
+// }
 
 func hashReset(user *models.User) (token string) {
 	token = utils.RandString(10)
