@@ -25,7 +25,7 @@ var templateId map[string]string
 
 type recipientAPI struct {
 	Address string `json:"email"`
-	Name 	string `json:"name"`
+	Name 	  string `json:"name"`
 }
 
 
@@ -36,13 +36,11 @@ type substitutionAPI struct {
 type personalizationAPI struct {
 	Recipients       []recipientAPI    	`json:"to"`
 	Substitution     map[string]string  `json:"substitutions"`
-
 }
 
-
 type transmissionAPI struct {
-	TemplateId 		 string				`json:"template_id"`
-	Senders       	 recipientAPI    	`json:"from"`
+	TemplateId 		   string				        `json:"template_id"`
+	Senders       	 recipientAPI    	    `json:"from"`
 	Personalization  []personalizationAPI `json:"personalizations"`
 }
 
@@ -60,8 +58,7 @@ func readConfig() {
 	apiKey = getConfig("sendgrid.apikey")
 	templateId["confirm"] = getConfig("sendgrid.template.confirm")
 	templateId["reset"] = getConfig("sendgrid.template.reset")
-	sendMail= getConfig("sendgrid.mail")
-	// 	apiKey = "672c40cdb9bb75b6ccc81a9a080624877b516ca3"
+	sendMail = getConfig("sendgrid.mail")
 }
 
 func templateMail(template string, address string,  data map[string]string) (result []byte, err error) {

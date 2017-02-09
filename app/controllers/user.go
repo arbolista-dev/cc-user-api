@@ -152,7 +152,7 @@ func (c Users) Add() revel.Result {
 	if err != nil {
 		return c.Error(err)
 	}
-	err = SendUserMail( newUser.FirstName, userID,token, newUser.Email);
+	err = SendUserMail(newUser.FirstName, userID, token, newUser.Email);
 	if err != nil {
 		return c.Error(err)
 	}
@@ -250,9 +250,7 @@ func FootprintAnswerToUint(name string, answersMap map[string]interface{}) (foot
 	} else {
 		return
 	}
-
 }
-
 
 func (c Users) SetLocation() revel.Result {
 	userID, _, err := c.GetSession()
@@ -399,7 +397,7 @@ func (c Users) SendActivate() revel.Result {
 func SendUserMail(name string, userID uint, token string, email string ) (err error) {
 	data := map[string]string{"-name-": name, "-link-": ConfirmURL( userID, token)}
 	err = services.SendMail("confirm", email, data)
-	return 
+	return
 }
 
 func ConfirmURL(userID uint, token string) (uri string) {
@@ -411,7 +409,7 @@ func ConfirmURL(userID uint, token string) (uri string) {
 	host = revel.Config.StringDefault("server.reset.host",host)
 	if revel.Config.BoolDefault("http.ssl",false) {
 		scheme = "https"
-	}else {
+	} else {
 		scheme = "http"
 	}
 	u := url.URL{}

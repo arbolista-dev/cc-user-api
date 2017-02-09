@@ -29,7 +29,7 @@ type User struct {
 	TotalFootprint	types.JSONText `json:"total_footprint" db:"total_footprint"`
 	ResetHash       []byte         `json:"-" db:"reset_hash"`
 	ResetExpiration time.Time      `json:"-" db:"reset_expiration"`
-	EmailHash       []byte         `json:"-" db:"email_hash"`	
+	EmailHash       []byte         `json:"-" db:"email_hash"`
 	EmailExpiration	time.Time      `json:"-" db:"email_expiration"`
 }
 
@@ -91,15 +91,17 @@ type Leader struct {
 	HouseholdSize			int 				 	 `json:"household_size" db:"household_size"`
 	TotalFootprint	types.JSONText 	 `json:"total_footprint" db:"total_footprint"`
 }
-type NeedActivate struct { 
-	Need 				bool			 `json:"need"`
-	Name 				string			 `json:"-"`
-	Email 				string			 `json:"-"`
+
+type NeedActivate struct {
+	Need 			 bool			 `json:"need"`
+	Name 			 string		 `json:"-"`
+	Email 		 string		 `json:"-"`
 }
-type PasswordReset struct { 
-	Id 					uint			 `json:"id"`
-	Token 				string			 `json:"token"`
-	Password 			string			 `json:"password"`
+
+type PasswordReset struct {
+	Id 					uint			`json:"id"`
+	Token 			string	  `json:"token"`
+	Password 		string	  `json:"password"`
 }
 
 func (user *User) Validate(v *revel.Validation) {
