@@ -6,7 +6,7 @@ app/tmp
 #app/vendor
 
 #Container volume
-data
+./data/
 
 #Tests results
 test-results
