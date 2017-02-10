@@ -23,7 +23,7 @@ func UpdateUserGoals(userID uint, update models.UserGoalUpdate) (err error) {
     userGoalExists = true
   }
 
-  // Details only exist if status == 'pledged' || 'completed'
+  // Details only exist if status == 'pledged' || 'completed' || 'already_done'
   var details map[string]interface{}
   if update.Details != nil {
     err = json.Unmarshal([]byte(update.Details), &details)
@@ -40,7 +40,7 @@ func UpdateUserGoals(userID uint, update models.UserGoalUpdate) (err error) {
     userGoal.UserID = userID
     userGoal.CreatedAt = time.Now()
 
-    if status := update.Status; status == "pledged" || status == "completed" {
+    if status := update.Status; status == "pledged" || status == "completed" || status == "already_done"{
       userGoal.TonsSaved = details["tons_saved"].(float64)
       userGoal.DollarsSaved = details["dollars_saved"].(float64)
       userGoal.UpfrontCost = details["upfront_cost"].(float64)
@@ -74,6 +74,23 @@ func UpdateUserGoals(userID uint, update models.UserGoalUpdate) (err error) {
 
         err = userGoalSource.Find(db.Cond{"user_id": userID}, db.Cond{"key": update.Key}).Update(userGoal)
         return
+
+      case "already_done":
+        userGoal.Status = update.Status
+        userGoal.TonsSaved = details["tons_saved"].(float64)
+        userGoal.DollarsSaved = details["dollars_saved"].(float64)
+        userGoal.UpfrontCost = details["upfront_cost"].(float64)
+
+        err = userGoalSource.Find(db.Cond{"user_id": userID}, db.Cond{"key": update.Key}).Update(userGoal)
+        return
+
+      case "not_already_done":
+        if userGoal.Status == "already_done" {
+          err = userGoalSource.Find(db.Cond{"user_id": userID}, db.Cond{"key": update.Key}).Delete()
+          return
+        }
+        return
+
       case "unpledged":
         if userGoal.Status == "pledged" {
           err = userGoalSource.Find(db.Cond{"user_id": userID}, db.Cond{"key": update.Key}).Delete()
@@ -95,8 +112,8 @@ func UpdateUserGoals(userID uint, update models.UserGoalUpdate) (err error) {
         return
       case "uncompleted":
         if userGoal.Status == "completed" {
-          userGoal.Status = update.Status
-          err = userGoalSource.Find(db.Cond{"user_id": userID}, db.Cond{"key": update.Key}).Update(userGoal)
+          // userGoal.Status = update.Status
+          err = userGoalSource.Find(db.Cond{"user_id": userID}, db.Cond{"key": update.Key}).Delete()
           return
         }
         return
