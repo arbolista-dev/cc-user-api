@@ -2,7 +2,7 @@ package ds
 
 import (
 	"log"
-	"os"
+  "os"
 	"upper.io/db.v2"
 	"upper.io/db.v2/postgresql"
 )
@@ -17,7 +17,7 @@ var (
 )
 
 func init() {
-	settings := postgresql.ConnectionURL{
+  settings := postgresql.ConnectionURL{
 		Database: os.Getenv("CC_DBNAME"),
 		Host:     "postgres",
 		User:     os.Getenv("CC_DBUSER"),

@@ -22,8 +22,11 @@ POST    /user/reset                            Users.PassResetConfirm
 GET     /user/leaders                          Users.ListLeaders
 GET     /user/:userID/profile                  Users.Show
 GET     /user/locations                        Users.ListLocations
+# GET 	  /user/activate						             Users.NeedActivate
+# POST 	  /user/activate						             Users.SendActivate
+GET     /user/passreset                        Users.PasswordReset
+# GET     /user/confirm                          Users.Confirm
 
-GET     /page/passreset                        Page.PasswordReset
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

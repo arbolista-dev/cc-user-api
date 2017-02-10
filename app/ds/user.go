@@ -97,7 +97,7 @@ func Delete(userID uint) (err error) {
 }
 
 func ValidateFacebookToken(logRequest models.UserFacebook) (facebookData models.FacebookToken,err error) {
-	resp, err := http.Get("https://graph.facebook.com/v2.5/"+logRequest.FacebookID+"?fields=id,first_name,last_name,email&access_token="+logRequest.FacebookToken);
+	resp, err := http.Get("https://graph.facebook.com/v2.5/"+logRequest.FacebookID+"?fields=id,first_name,last_name,email&access_token="+logRequest.FacebookToken)
 	if err != nil {
   	return
   }
@@ -108,7 +108,7 @@ func ValidateFacebookToken(logRequest models.UserFacebook) (facebookData models.
 	}
 
 	err = json.Unmarshal(body, &facebookData)
-  if facebookData.Error !=nil || facebookData.FacebookID != logRequest.FacebookID {
+  if facebookData.Error != nil || facebookData.FacebookID != logRequest.FacebookID {
   	err =  errors.New("Token invalid");
   	return
   }
@@ -118,18 +118,18 @@ func ValidateFacebookToken(logRequest models.UserFacebook) (facebookData models.
 func LoginFacebook(logRequest models.UserFacebook) (login map[string]interface{}, err error) {
 	var user models.User
 	var facebookData models.FacebookToken
-	facebookData, err =ValidateFacebookToken(logRequest)
+	facebookData, err = ValidateFacebookToken(logRequest)
 	if err != nil {
 		err = errors.New(`{"facebook":"token-invalid"}`);
 	}
-	if err!=nil {
+	if err != nil {
 		return
 	}
 	err = userSource.Find("facebook_id", logRequest.FacebookID).One(&user)
 	if err != nil {
 		err = nil;
-		user.FacebookID =  facebookData.FacebookID;
-		user.Email =  facebookData.Email;
+		user.FacebookID = facebookData.FacebookID;
+		user.Email = facebookData.Email;
 		user.FirstName = facebookData.FirstName;
 		user.LastName = facebookData.LastName;
 		user.Answers = logRequest.Answers;
@@ -326,14 +326,56 @@ func UpdateAnswers(userID uint, userAnswers models.AnswersUpdate) (err error) {
 	return
 }
 
-func PassResetRequest(email string) (userID uint, token string, err error) {
+// func ConfirmRequest(email string) (token string, err error) {
+// 	var user models.User
+// 	err = userSource.Find(db.Cond{"email": email}).One(&user)
+// 	if err != nil {
+// 		return
+// 	}
+// 	token = hashConfirm(&user)
+// 	err = userSource.Find(db.Cond{"user_id": user.UserID}).Update(user)
+// 	return
+// }
+//
+// func ConfirmEmail(userID uint, token string) (err error) {
+// 	var user models.User
+// 	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
+// 	if err != nil {
+// 		return
+// 	}
+// 	user.UnmarshalDB()
+// 	if user.ResetExpiration.After(time.Now()) {
+// 		user.ResetHash = []byte{}
+// 		user.ResetExpiration = time.Time{}
+// 		err = errors.New(`The link has expired`)
+// 		return
+// 	}
+//
+// 	err = bcrypt.CompareHashAndPassword(user.EmailHash, []byte(token))
+// 	if err != nil {
+// 		err = errors.New(`The link is corrupt`)
+// 		return err
+// 	}
+// 	user.EmailHash = []byte{}
+// 	user.EmailExpiration = time.Time{}
+// 	user.MarshalDB()
+// 	err = userSource.Find(db.Cond{"user_id": user.UserID}).Update(user)
+// 	if err != nil {
+// 		return
+// 	}
+// 	return
+// }
+
+func PassResetRequest(email string) (userID uint, token string, name string, err error) {
 	var user models.User
 	err = userSource.Find(db.Cond{"email": email}).One(&user)
 	if err != nil {
+    err = errors.New(`{"password-reset":"user-non-existent"}`)
 		return
 	}
 	token = hashReset(&user)
 	userID = user.UserID
+	name = user.FirstName
 	err = userSource.Find(db.Cond{"user_id": user.UserID}).Update(user)
 	return
 }
@@ -341,20 +383,21 @@ func PassResetRequest(email string) (userID uint, token string, err error) {
 func PassResetConfirm(userID uint, token, password string) (err error) {
 	var user models.User
 	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
-	if err != nil {
+  if err != nil {
+    err = errors.New(`{"password-reset":"non-existent"}`)
 		return
 	}
 	user.UnmarshalDB()
-	if user.ResetExpiration.After(time.Now()) {
+	if user.ResetExpiration.Before(time.Now()) {
 		user.ResetHash = []byte{}
 		user.ResetExpiration = time.Time{}
-		err = errors.New(`{"password-reset": "expired"}`)
+		err = errors.New(`{"password-reset":"expired"}`)
 		return
 	}
 
 	err = bcrypt.CompareHashAndPassword(user.ResetHash, []byte(token))
 	if err != nil {
-		err = errors.New(`{"reset-token": "corrupt"}`)
+		err = errors.New(`{"reset-token":"corrupt"}`)
 		return err
 	}
 
@@ -414,6 +457,27 @@ func ListLocations() (locations []models.Location, err error) {
 	return
 }
 
+// func NeedActivate(userID uint) (activate models.NeedActivate, err error) {
+// 	var user models.User
+// 	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
+// 	if err != nil {
+// 		return
+// 	}
+//
+// 	if user.EmailHash == nil || len(user.EmailHash) == 0 {
+// 		activate = models.NeedActivate{
+// 			Need: false,
+// 		}
+// 	}else {
+// 		activate = models.NeedActivate{
+// 			Need: true,
+// 			Name: user.FirstName,
+// 			Email: user.Email,
+// 		}
+// 	}
+// 	return
+// }
+
 func hashPassword(user *models.User) {
 	b := make([]byte, 10)
 	_, err := rand.Read(b)
@@ -424,6 +488,17 @@ func hashPassword(user *models.User) {
 	user.Salt = b
 }
 
+// func hashConfirm(user *models.User) (token string) {
+// 	token = utils.RandString(10)
+// 	var err error
+// 	user.EmailHash, err = bcrypt.GenerateFromPassword([]byte(token), bcrypt.DefaultCost)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	user.EmailExpiration = time.Now().Add(time.Hour * 5)
+// 	return
+// }
+
 func hashReset(user *models.User) (token string) {
 	token = utils.RandString(10)
 	var err error
@@ -431,6 +506,6 @@ func hashReset(user *models.User) (token string) {
 	if err != nil {
 		panic(err)
 	}
-	user.ResetExpiration = time.Now().Add(time.Minute * 5)
+	user.ResetExpiration = time.Now().Add(time.Hour * 48)
 	return
 }

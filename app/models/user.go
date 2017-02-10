@@ -32,6 +32,8 @@ type User struct {
 	ProfileData			types.JSONText `json:"profile_data" db:"profile_data"`
 	ResetHash       []byte         `json:"-" db:"reset_hash"`
 	ResetExpiration time.Time      `json:"-" db:"reset_expiration"`
+	// EmailHash       []byte         `json:"-" db:"email_hash"`
+	// EmailExpiration	time.Time      `json:"-" db:"email_expiration"`
 }
 
 type UserUpdate struct {
@@ -83,6 +85,7 @@ type TotalFootprint struct {
 }
 
 type Email struct {
+	FirstName       string         `json:"first_name" db:"first_name"`
 	Email		string	`json:"email"`
 }
 
@@ -112,6 +115,18 @@ type Leader struct {
 	PhotoUrl					string				 `json:"photo_url" db:"photo_url"`
 	ProfileData				types.JSONText `json:"profile_data" db:"profile_data"`
 	Public						bool				 	 `json:"public" db:"public"`
+}
+
+// type NeedActivate struct {
+// 	Need 			 bool			 `json:"need"`
+// 	Name 			 string		 `json:"-"`
+// 	Email 		 string		 `json:"-"`
+// }
+
+type PasswordReset struct {
+	Id 					uint			`json:"id"`
+	Token 			string	  `json:"token"`
+	Password 		string	  `json:"password"`
 }
 
 func (user *User) Validate(v *revel.Validation) {
