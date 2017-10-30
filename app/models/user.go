@@ -3,10 +3,11 @@ package models
 import (
 	"bytes"
 	"encoding/gob"
+	"strconv"
+	"time"
+
 	"github.com/jmoiron/sqlx/types"
 	"github.com/revel/revel"
-	"time"
-  "strconv"
 )
 
 type User struct {
@@ -21,97 +22,97 @@ type User struct {
 	ValidJTIs       []string       `json:"-" db:"-"`
 	ValidJTI        []byte         `json:"-" db:"valid_jti"`
 	Answers         types.JSONText `json:"answers" db:"answers"`
-	Public					bool				 	 `json:"public" db:"public"`
-	City						string 				 `json:"city" db:"city"`
-	State						string 				 `json:"state" db:"state"`
-	County					string 				 `json:"county" db:"county"`
-	Country					string 				 `json:"country" db:"country"`
-	HouseholdSize		int 				 	 `json:"household_size" db:"household_size"`
-	TotalFootprint	types.JSONText `json:"total_footprint" db:"total_footprint"`
-	PhotoUrl				string				 `json:"photo_url" db:"photo_url"`
-	ProfileData			types.JSONText `json:"profile_data" db:"profile_data"`
+	Public          bool           `json:"public" db:"public"`
+	City            string         `json:"city" db:"city"`
+	State           string         `json:"state" db:"state"`
+	County          string         `json:"county" db:"county"`
+	Country         string         `json:"country" db:"country"`
+	HouseholdSize   int            `json:"household_size" db:"household_size"`
+	TotalFootprint  types.JSONText `json:"total_footprint" db:"total_footprint"`
+	PhotoURL        string         `json:"photo_url" db:"photo_url"`
+	ProfileData     types.JSONText `json:"profile_data" db:"profile_data"`
 	ResetHash       []byte         `json:"-" db:"reset_hash"`
 	ResetExpiration time.Time      `json:"-" db:"reset_expiration"`
 }
 
 type UserUpdate struct {
-	FirstName       string         `json:"first_name" db:"first_name"`
-	LastName        string         `json:"last_name" db:"last_name"`
-	Email           string         `json:"email" db:"email"`
-	Public					string				 `json:"public"`
-	TotalFootprint	types.JSONText `json:"total_footprint" db:"total_footprint"`
-	ProfileData			types.JSONText `json:"profile_data" db:"profile_data"`
+	FirstName      string         `json:"first_name" db:"first_name"`
+	LastName       string         `json:"last_name" db:"last_name"`
+	Email          string         `json:"email" db:"email"`
+	Public         string         `json:"public"`
+	TotalFootprint types.JSONText `json:"total_footprint" db:"total_footprint"`
+	ProfileData    types.JSONText `json:"profile_data" db:"profile_data"`
 }
 
 type UserLogin struct {
-	Email    		string	`json:"email"`
-	Password		string	`json:"password"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type UserFacebook struct {
-	FacebookID			string	`json:"facebookID"`
-	FacebookToken		string	`json:"facebookToken"`
-	Answers       	types.JSONText `json:"answers" db:"answers"`
+	FacebookID    string         `json:"facebookID"`
+	FacebookToken string         `json:"facebookToken"`
+	Answers       types.JSONText `json:"answers" db:"answers"`
 }
 type FacebookToken struct {
-	FacebookID		string	`json:"id"`
-	FirstName   	string	`json:"first_name"`
-	LastName   		string	`json:"last_name"`
-	Email   			string	`json:"email"`
-	Error       	types.JSONText	`json:"error"`
+	FacebookID string         `json:"id"`
+	FirstName  string         `json:"first_name"`
+	LastName   string         `json:"last_name"`
+	Email      string         `json:"email"`
+	Error      types.JSONText `json:"error"`
 }
 
 type Answers struct {
-	Answers		types.JSONText	`json:"answers"`
+	Answers types.JSONText `json:"answers"`
 }
 
 type AnswersUpdate struct {
-	Answers		types.JSONText	`json:"answers"`
-	HouseholdSize		int 				 	 `json:"household_size" db:"household_size"`
-	TotalFootprint	types.JSONText `json:"total_footprint" db:"total_footprint"`
+	Answers        types.JSONText `json:"answers"`
+	HouseholdSize  int            `json:"household_size" db:"household_size"`
+	TotalFootprint types.JSONText `json:"total_footprint" db:"total_footprint"`
 }
 
 type Location struct {
-	City			string	`json:"city" db:"city"`
-	State			string 	`json:"state" db:"state"`
-	County		string  `json:"county" db:"county"`
-	Country		string 	`json:"country" db:"country"`
+	City    string `json:"city" db:"city"`
+	State   string `json:"state" db:"state"`
+	County  string `json:"county" db:"county"`
+	Country string `json:"country" db:"country"`
 }
 
 type TotalFootprint struct {
-	TotalFootprint		types.JSONText	`json:"total_footprint"`
+	TotalFootprint types.JSONText `json:"total_footprint"`
 }
 
 type Email struct {
-	Email		string	`json:"email"`
+	Email string `json:"email"`
 }
 
 type PaginatedLeaders struct {
-	TotalCount		uint64	`json:"total_count"`
-	List					[]Leader	`json:"list"`
+	TotalCount uint64   `json:"total_count"`
+	List       []Leader `json:"list"`
 }
 
 type ProfileData struct {
-  Facebook  string `json:"facebook"`
-  Twitter   string `json:"twitter"`
-  Instagram string `json:"instagram"`
+	Facebook  string `json:"facebook"`
+	Twitter   string `json:"twitter"`
+	Instagram string `json:"instagram"`
 	LinkedIn  string `json:"linkedin"`
 	Medium    string `json:"medium"`
 	Intro     string `json:"intro"`
 }
 
 type Leader struct {
-	UserID          	uint           `json:"user_id" db:"user_id"`
-	FirstName       	string         `json:"first_name" db:"first_name"`
-	LastName        	string         `json:"last_name" db:"last_name"`
-	City							string 				 `json:"city" db:"city"`
-	State							string 				 `json:"state" db:"state"`
-	County						string 				 `json:"county" db:"county"`
-	HouseholdSize			int 				 	 `json:"household_size" db:"household_size"`
-	TotalFootprint		types.JSONText `json:"total_footprint" db:"total_footprint"`
-	PhotoUrl					string				 `json:"photo_url" db:"photo_url"`
-	ProfileData				types.JSONText `json:"profile_data" db:"profile_data"`
-	Public						bool				 	 `json:"public" db:"public"`
+	UserID         uint           `json:"user_id" db:"user_id"`
+	FirstName      string         `json:"first_name" db:"first_name"`
+	LastName       string         `json:"last_name" db:"last_name"`
+	City           string         `json:"city" db:"city"`
+	State          string         `json:"state" db:"state"`
+	County         string         `json:"county" db:"county"`
+	HouseholdSize  int            `json:"household_size" db:"household_size"`
+	TotalFootprint types.JSONText `json:"total_footprint" db:"total_footprint"`
+	PhotoUrl       string         `json:"photo_url" db:"photo_url"`
+	ProfileData    types.JSONText `json:"profile_data" db:"profile_data"`
+	Public         bool           `json:"public" db:"public"`
 }
 
 func (user *User) Validate(v *revel.Validation) {
@@ -200,17 +201,17 @@ func (u *User) Update(n UserUpdate) {
 	if n.Email != "" {
 		u.Email = n.Email
 	}
-  // updating Public with string value because when using bool a non-given public parameter sets it to false
+	// updating Public with string value because when using bool a non-given public parameter sets it to false
 	if n.Public != "" {
-    b, err := strconv.ParseBool(n.Public)
-    if err != nil {
-      return
-    }
+		b, err := strconv.ParseBool(n.Public)
+		if err != nil {
+			return
+		}
 		u.Public = b
 	}
-  if n.TotalFootprint != nil {
-    u.TotalFootprint = n.TotalFootprint
-  }
+	if n.TotalFootprint != nil {
+		u.TotalFootprint = n.TotalFootprint
+	}
 	if n.ProfileData != nil {
 		u.ProfileData = n.ProfileData
 	}
