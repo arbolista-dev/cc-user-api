@@ -2,18 +2,19 @@ package controllers
 
 import (
 	"bytes"
+	"encoding/json"
 	"image"
 	_ "image/jpeg"
 	_ "image/png"
-	"encoding/json"
+	"io/ioutil"
+	"math"
+	"net/url"
+	"strconv"
+
 	"github.com/arbolista-dev/cc-user-api/app/ds"
 	"github.com/arbolista-dev/cc-user-api/app/models"
 	"github.com/arbolista-dev/cc-user-api/app/services"
 	"github.com/revel/revel"
-	"io/ioutil"
-	"net/url"
-	"strconv"
-	"math"
 )
 
 const (
@@ -200,7 +201,7 @@ func (c Users) Show(userID uint) revel.Result {
 }
 
 func (c Users) RetrieveUserGoals() revel.Result {
-  userID, _, err := c.GetSession()
+	userID, _, err := c.GetSession()
 	if err != nil {
 		return c.Error(err)
 	}
@@ -214,26 +215,26 @@ func (c Users) RetrieveUserGoals() revel.Result {
 }
 
 func (c Users) UpdateUserGoals() revel.Result {
-  userID, _, err := c.GetSession()
-  if err != nil {
-    return c.Error(err)
-  }
+	userID, _, err := c.GetSession()
+	if err != nil {
+		return c.Error(err)
+	}
 
-  body, err := ioutil.ReadAll(c.Request.Body)
-  if err != nil {
-    return c.Error(err)
-  }
-  var update models.UserGoalUpdate
-  err = json.Unmarshal(body, &update)
-  if err != nil {
-    return c.Error(err)
-  }
+	body, err := ioutil.ReadAll(c.Request.Body)
+	if err != nil {
+		return c.Error(err)
+	}
+	var update models.UserGoalUpdate
+	err = json.Unmarshal(body, &update)
+	if err != nil {
+		return c.Error(err)
+	}
 
-  err = ds.UpdateUserGoals(userID, update)
-  if err != nil {
-    return c.Error(err)
-  }
-  return c.OK()
+	err = ds.UpdateUserGoals(userID, update)
+	if err != nil {
+		return c.Error(err)
+	}
+	return c.OK()
 }
 
 func (c Users) UpdateAnswers() revel.Result {
@@ -259,20 +260,20 @@ func (c Users) UpdateAnswers() revel.Result {
 	}
 
 	footprintsMap := map[string]interface{}{
-		"result_food_total": 0,
-		"result_housing_total": 0,
-		"result_services_total": 0,
-		"result_goods_total": 0,
-		"result_shopping_total": 0,
+		"result_food_total":      0,
+		"result_housing_total":   0,
+		"result_services_total":  0,
+		"result_goods_total":     0,
+		"result_shopping_total":  0,
 		"result_transport_total": 0,
-		"result_grand_total": 0,
+		"result_grand_total":     0,
 	}
 
 	for name, _ := range footprintsMap {
 		if name == "result_shopping_total" {
 			footprintsMap[name] = FootprintAnswerToUint("result_services_total", answersMap) + FootprintAnswerToUint("result_goods_total", answersMap)
 		} else {
-		  footprintsMap[name] = FootprintAnswerToUint(name, answersMap)
+			footprintsMap[name] = FootprintAnswerToUint(name, answersMap)
 		}
 	}
 
@@ -351,7 +352,6 @@ func (c Users) SetPhoto(file []byte) revel.Result {
 	c.Validation.MinSize(file, 2*KB)
 	c.Validation.MaxSize(file, 4*MB)
 
-
 	conf, format, err := image.DecodeConfig(bytes.NewReader(file))
 	if err != nil {
 		return c.Error(err)
@@ -384,6 +384,7 @@ func (c Users) Update() revel.Result {
 	if err != nil {
 		return c.Error(err)
 	}
+
 	var user models.UserUpdate
 	err = json.Unmarshal(body, &user)
 	if err != nil {

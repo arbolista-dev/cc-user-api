@@ -32,8 +32,12 @@ database-shell:
 	docker exec -it postgres psql -Ucc cc_users
 
 # Run DB migrations
-migrate-db:
+migrate-up:
 	docker exec -it user_api bash -c 'cd go/src/github.com/arbolista-dev/cc-user-api; goose -env $(CC_ENV) up'
+
+# rollback db migrations
+migrate-down:
+	docker exec -it user_api bash -c 'cd go/src/github.com/arbolista-dev/cc-user-api; goose -env $(CC_ENV) down'
 
 # Update API with latest changes (CC_ENV=dev only)
 update-api:

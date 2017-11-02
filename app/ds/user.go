@@ -2,17 +2,19 @@ package ds
 
 import (
 	"crypto/rand"
+	"encoding/json"
 	"errors"
-	"github.com/arbolista-dev/cc-user-api/app/models"
-	"github.com/arbolista-dev/cc-user-api/app/utils"
-	"golang.org/x/crypto/bcrypt"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"time"
-	"upper.io/db.v2"
+
+	db "upper.io/db.v2"
+
+	"github.com/arbolista-dev/cc-user-api/app/models"
+	"github.com/arbolista-dev/cc-user-api/app/utils"
 	"github.com/lib/pq"
-	"net/http"
-	"encoding/json"
-	"io/ioutil"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func GetSession(token string) (userID uint, jti string, err error) {
@@ -91,49 +93,49 @@ func Add(user models.User) (login map[string]interface{}, err error) {
 }
 
 func Delete(userID uint) (err error) {
-  err = DeleteUserGoals(userID)
+	err = DeleteUserGoals(userID)
 	err = userSource.Find(db.Cond{"user_id": userID}).Delete()
 	return
 }
 
-func ValidateFacebookToken(logRequest models.UserFacebook) (facebookData models.FacebookToken,err error) {
-	resp, err := http.Get("https://graph.facebook.com/v2.5/"+logRequest.FacebookID+"?fields=id,first_name,last_name,email&access_token="+logRequest.FacebookToken);
+func ValidateFacebookToken(logRequest models.UserFacebook) (facebookData models.FacebookToken, err error) {
+	resp, err := http.Get("https://graph.facebook.com/v2.5/" + logRequest.FacebookID + "?fields=id,first_name,last_name,email&access_token=" + logRequest.FacebookToken)
 	if err != nil {
-  	return
-  }
+		return
+	}
 
-  body, err := ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return
 	}
 
 	err = json.Unmarshal(body, &facebookData)
-  if facebookData.Error !=nil || facebookData.FacebookID != logRequest.FacebookID {
-  	err =  errors.New("Token invalid");
-  	return
-  }
-  return
+	if facebookData.Error != nil || facebookData.FacebookID != logRequest.FacebookID {
+		err = errors.New("Token invalid")
+		return
+	}
+	return
 }
 
 func LoginFacebook(logRequest models.UserFacebook) (login map[string]interface{}, err error) {
 	var user models.User
 	var facebookData models.FacebookToken
-	facebookData, err =ValidateFacebookToken(logRequest)
+	facebookData, err = ValidateFacebookToken(logRequest)
 	if err != nil {
-		err = errors.New(`{"facebook":"token-invalid"}`);
+		err = errors.New(`{"facebook":"token-invalid"}`)
 	}
-	if err!=nil {
+	if err != nil {
 		return
 	}
 	err = userSource.Find("facebook_id", logRequest.FacebookID).One(&user)
 	if err != nil {
-		err = nil;
-		user.FacebookID =  facebookData.FacebookID;
-		user.Email =  facebookData.Email;
-		user.FirstName = facebookData.FirstName;
-		user.LastName = facebookData.LastName;
-		user.Answers = logRequest.Answers;
-		login, err = Add(user);
+		err = nil
+		user.FacebookID = facebookData.FacebookID
+		user.Email = facebookData.Email
+		user.FirstName = facebookData.FirstName
+		user.LastName = facebookData.LastName
+		user.Answers = logRequest.Answers
+		login, err = Add(user)
 		return
 	}
 
@@ -238,7 +240,8 @@ func Show(userID uint, auth bool) (profile map[string]interface{}, err error) {
 	var user models.Leader
 	err = userSource.Find(db.Cond{"user_id": userID}).One(&user)
 	if err != nil {
-		err = errors.New(`{"profile": "non-existent"}`)
+		// err = errors.New(`{"profile": "non-existent"}`)
+		err = errors.New(err.Error())
 		return
 	}
 
@@ -247,8 +250,8 @@ func Show(userID uint, auth bool) (profile map[string]interface{}, err error) {
 		return
 	}
 
-  userGoals, err := RetrieveUserGoals(userID)
-  if err != nil {
+	userGoals, err := RetrieveUserGoals(userID)
+	if err != nil {
 		return
 	}
 
@@ -259,18 +262,20 @@ func Show(userID uint, auth bool) (profile map[string]interface{}, err error) {
 	}
 
 	profile = map[string]interface{}{
-		"user_id":    			user.UserID,
-		"first_name": 			user.FirstName,
-		"last_name":  			user.LastName,
-		"city":  						user.City,
-		"state":  					user.State,
-		"county":  					user.County,
-		"household_size": 	user.HouseholdSize,
-		"total_footprint": 	user.TotalFootprint.String(),
-		"photo_url": 				user.PhotoUrl,
-		"profile_data":			profileData,
-		"public":						user.Public,
-    "user_goals":       userGoals.List,
+		"user_id":                   user.UserID,
+		"first_name":                user.FirstName,
+		"last_name":                 user.LastName,
+		"city":                      user.City,
+		"state":                     user.State,
+		"county":                    user.County,
+		"household_size":            user.HouseholdSize,
+		"total_footprint":           user.TotalFootprint.String(),
+		"photo_url":                 user.PhotoUrl,
+		"profile_data":              profileData,
+		"public":                    user.Public,
+		"accepted_terms_conditions": user.AcceptedTermsConditions,
+		"over_eighteen_years":       user.OverEighteenYears,
+		"user_goals":                userGoals.List,
 	}
 	return
 }

@@ -17,6 +17,7 @@ ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 RUN go get github.com/revel/cmd/revel
 RUN go get bitbucket.org/liamstask/goose/cmd/goose
 RUN go get github.com/aws/aws-sdk-go
+RUN go get upper.io/db.v2/postgresql
 
 RUN mkdir -p /go/src/github.com/arbolista-dev/cc-user-api
 

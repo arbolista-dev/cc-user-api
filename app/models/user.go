@@ -6,42 +6,48 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/lib/pq"
+
 	"github.com/jmoiron/sqlx/types"
 	"github.com/revel/revel"
 )
 
 type User struct {
-	UserID          uint           `json:"user_id" db:"user_id,omitempty"`
-	FirstName       string         `json:"first_name" db:"first_name"`
-	LastName        string         `json:"last_name" db:"last_name"`
-	FacebookID      string         `json:"facebook_id" db:"facebook_id"`
-	Password        string         `json:"password" db:"-"`
-	Hash            []byte         `json:"-" db:"hash"`
-	Salt            []byte         `json:"-" db:"salt"`
-	Email           string         `json:"email" db:"email"`
-	ValidJTIs       []string       `json:"-" db:"-"`
-	ValidJTI        []byte         `json:"-" db:"valid_jti"`
-	Answers         types.JSONText `json:"answers" db:"answers"`
-	Public          bool           `json:"public" db:"public"`
-	City            string         `json:"city" db:"city"`
-	State           string         `json:"state" db:"state"`
-	County          string         `json:"county" db:"county"`
-	Country         string         `json:"country" db:"country"`
-	HouseholdSize   int            `json:"household_size" db:"household_size"`
-	TotalFootprint  types.JSONText `json:"total_footprint" db:"total_footprint"`
-	PhotoURL        string         `json:"photo_url" db:"photo_url"`
-	ProfileData     types.JSONText `json:"profile_data" db:"profile_data"`
-	ResetHash       []byte         `json:"-" db:"reset_hash"`
-	ResetExpiration time.Time      `json:"-" db:"reset_expiration"`
+	UserID                  uint           `json:"user_id" db:"user_id,omitempty"`
+	FirstName               string         `json:"first_name" db:"first_name"`
+	LastName                string         `json:"last_name" db:"last_name"`
+	FacebookID              string         `json:"facebook_id" db:"facebook_id"`
+	Password                string         `json:"password" db:"-"`
+	Hash                    []byte         `json:"-" db:"hash"`
+	Salt                    []byte         `json:"-" db:"salt"`
+	Email                   string         `json:"email" db:"email"`
+	ValidJTIs               []string       `json:"-" db:"-"`
+	ValidJTI                []byte         `json:"-" db:"valid_jti"`
+	Answers                 types.JSONText `json:"answers" db:"answers"`
+	Public                  bool           `json:"public" db:"public"`
+	AcceptedTermsConditions pq.NullTime    `json:"accepted_terms_conditions" db:"accepted_terms_conditions"`
+	OverEighteenYears       pq.NullTime    `json:"over_eighteen_years" db:"over_eighteen_years"`
+	City                    string         `json:"city" db:"city"`
+	State                   string         `json:"state" db:"state"`
+	County                  string         `json:"county" db:"county"`
+	Country                 string         `json:"country" db:"country"`
+	HouseholdSize           int            `json:"household_size" db:"household_size"`
+	TotalFootprint          types.JSONText `json:"total_footprint" db:"total_footprint"`
+	PhotoUrl                string         `json:"photo_url" db:"photo_url"`
+	ProfileData             types.JSONText `json:"profile_data" db:"profile_data"`
+	ResetHash               []byte         `json:"-" db:"reset_hash"`
+	ResetExpiration         time.Time      `json:"-" db:"reset_expiration"`
 }
 
 type UserUpdate struct {
-	FirstName      string         `json:"first_name" db:"first_name"`
-	LastName       string         `json:"last_name" db:"last_name"`
-	Email          string         `json:"email" db:"email"`
-	Public         string         `json:"public"`
-	TotalFootprint types.JSONText `json:"total_footprint" db:"total_footprint"`
-	ProfileData    types.JSONText `json:"profile_data" db:"profile_data"`
+	FirstName               string         `json:"first_name" db:"first_name"`
+	LastName                string         `json:"last_name" db:"last_name"`
+	Email                   string         `json:"email" db:"email"`
+	Public                  string         `json:"public"`
+	TotalFootprint          types.JSONText `json:"total_footprint" db:"total_footprint"`
+	ProfileData             types.JSONText `json:"profile_data" db:"profile_data"`
+	AcceptedTermsConditions pq.NullTime    `json:"accepted_terms_conditions" db:"accepted_terms_conditions"`
+	OverEighteenYears       pq.NullTime    `json:"over_eighteen_years" db:"over_eighteen_years"`
 }
 
 type UserLogin struct {
@@ -102,17 +108,19 @@ type ProfileData struct {
 }
 
 type Leader struct {
-	UserID         uint           `json:"user_id" db:"user_id"`
-	FirstName      string         `json:"first_name" db:"first_name"`
-	LastName       string         `json:"last_name" db:"last_name"`
-	City           string         `json:"city" db:"city"`
-	State          string         `json:"state" db:"state"`
-	County         string         `json:"county" db:"county"`
-	HouseholdSize  int            `json:"household_size" db:"household_size"`
-	TotalFootprint types.JSONText `json:"total_footprint" db:"total_footprint"`
-	PhotoUrl       string         `json:"photo_url" db:"photo_url"`
-	ProfileData    types.JSONText `json:"profile_data" db:"profile_data"`
-	Public         bool           `json:"public" db:"public"`
+	UserID                  uint           `json:"user_id" db:"user_id"`
+	FirstName               string         `json:"first_name" db:"first_name"`
+	LastName                string         `json:"last_name" db:"last_name"`
+	City                    string         `json:"city" db:"city"`
+	State                   string         `json:"state" db:"state"`
+	County                  string         `json:"county" db:"county"`
+	HouseholdSize           int            `json:"household_size" db:"household_size"`
+	TotalFootprint          types.JSONText `json:"total_footprint" db:"total_footprint"`
+	PhotoUrl                string         `json:"photo_url" db:"photo_url"`
+	ProfileData             types.JSONText `json:"profile_data" db:"profile_data"`
+	Public                  bool           `json:"public" db:"public"`
+	AcceptedTermsConditions pq.NullTime    `json:"accepted_terms_conditions" db:"accepted_terms_conditions"`
+	OverEighteenYears       pq.NullTime    `json:"over_eighteen_years" db:"over_eighteen_years"`
 }
 
 func (user *User) Validate(v *revel.Validation) {
@@ -214,5 +222,11 @@ func (u *User) Update(n UserUpdate) {
 	}
 	if n.ProfileData != nil {
 		u.ProfileData = n.ProfileData
+	}
+	if n.AcceptedTermsConditions.Valid {
+		u.AcceptedTermsConditions = n.AcceptedTermsConditions
+	}
+	if n.OverEighteenYears.Valid {
+		u.OverEighteenYears = n.OverEighteenYears
 	}
 }

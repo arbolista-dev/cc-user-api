@@ -11,6 +11,8 @@ services:
       - postgres
     ports:
       - 8082:8082
+    volumes:
+      - ./:/go/src/github.com/arbolista-dev/cc-user-api
 
   postgres:
     container_name: postgres
